@@ -5,3 +5,8 @@ interface VillagePillagePlayer extends Player {
 interface VillagePillageGamedatas extends Gamedatas<VillagePillagePlayer> {
     // Add here variables you set up in getAllDatas
 }
+
+interface VillagePillageGame {
+    // @ts-ignore
+    animationManager: BgaAnimations.Manager;
+}

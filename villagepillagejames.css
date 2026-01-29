@@ -6,3 +6,15 @@
   background-size: 700% 400%;
   background-position: -600% -200%;
 }
+
+.player_contents {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.player_area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
