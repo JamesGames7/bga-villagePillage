@@ -1,5 +1,4 @@
 import { CardsManager } from "./cards";
-// import { BgaAnimations, BgaCards } from "./libs";
 import { BgaCards, BgaAnimations } from "./libs";
 import { Card } from "./docs/cards";
 import { Types } from "./cards";
@@ -7,8 +6,6 @@ import { Types } from "./cards";
 export class Game implements VillagePillageGame {
     // @ts-ignore
     public animationManager: BgaAnimations.Manager = new BgaAnimations.Manager();
-    // @ts-ignore
-    public testStocks: BgaCards.LineStock<Card>[] = [];
 
     public cardManager: CardsManager = new CardsManager(this);
 
@@ -31,7 +28,6 @@ export class Game implements VillagePillageGame {
             playerOrder.push(playerOrder.shift());
         }
 
-        let i: number = 0;
         playerOrder.forEach(id => {
             let info: VillagePillagePlayer = gamedatas.players[id];
 
@@ -44,10 +40,12 @@ export class Game implements VillagePillageGame {
                     </div>
                 </div>
             `)
-
-            this.testStocks.push(new BgaCards.LineStock(this.cardManager, $(`test_card_${info.id}`)));
-            this.testStocks[i].addCard({name: "test", id: i, type: Types.Farmer})
-            i++;
+            for (let i = 0; i < 5; i++) {
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_bank_${info.id}_${i}" class="turnip turnip_${i}"></div>`);
+            }
+            for (let i = 0; i < 3; i++) {
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="relic_bank_${info.id}_${i}" class="relic relic_${i}"></div>`);
+            }
         })
     } 
 

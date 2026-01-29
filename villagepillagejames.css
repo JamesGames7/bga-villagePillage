@@ -5,6 +5,7 @@
   background-image: url("img/baseCards.jpg");
   background-size: 700% 400%;
   background-position: -600% -200%;
+  position: relative;
 }
 
 .player_contents {
@@ -17,4 +18,64 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.turnip {
+  width: 60px;
+  aspect-ratio: 495/504;
+  position: absolute;
+  background-image: url("img/turnip.png");
+  background-size: 100% 100%;
+  opacity: 0;
+}
+
+.turnip_0 {
+  top: 60px;
+  left: 128px;
+}
+
+.turnip_1 {
+  top: 89.5px;
+  left: 82px;
+}
+
+.turnip_2 {
+  top: 119px;
+  left: 130px;
+}
+
+.turnip_3 {
+  top: 148.5px;
+  left: 82px;
+}
+
+.turnip_4 {
+  top: 178px;
+  left: 128px;
+}
+
+.relic {
+  width: 60px;
+  aspect-ratio: 1;
+  position: absolute;
+  background-image: url("img/relics.png");
+  background-size: 300% 100%;
+  transform: scaleX(-1);
+  left: 12px;
+  opacity: 0;
+}
+
+.relic_0 {
+  top: 38px;
+  background-position-x: 0%;
+}
+
+.relic_1 {
+  top: 107.5px;
+  background-position-x: -100%;
+}
+
+.relic_2 {
+  top: 177px;
+  background-position-x: -200%;
 }

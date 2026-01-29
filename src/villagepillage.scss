@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 .bank {
     width: 200px;
     aspect-ratio: 482 / 719;
@@ -7,6 +9,7 @@
     background-size: 700% 400%;
     // TODO allow 2 players
     background-position: -600% -200%;
+    position: relative;
 }
 
 .player_contents {
@@ -19,4 +22,48 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.turnip {
+    width: 60px;
+    aspect-ratio: 495 / 504;
+
+    position: absolute;
+
+    background-image: url('img/turnip.png');
+    background-size: 100% 100%;
+
+    opacity: 0;
+}
+
+$left_pos: (128px, 82px, 130px, 82px, 128px);
+
+@for $i from 0 through 4 {
+    .turnip_#{$i} {
+        top: calc($i * 29.5px + 60px);
+        left: list.nth($left_pos, $i + 1);
+    }
+}
+
+.relic {
+    width: 60px;
+    aspect-ratio: 1;
+
+    position: absolute;
+
+    background-image: url('img/relics.png');
+    background-size: 300% 100%;
+    transform: scaleX(-1);
+
+    left: 12px;
+
+    opacity: 0;
+}
+
+@for $i from 0 through 2 {
+    .relic_#{$i} {
+        top: calc($i * 69.5px + 38px);
+
+        background-position-x: $i * -100%;
+    }
 }

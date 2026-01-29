@@ -43,8 +43,6 @@ class Game {
     constructor(bga) {
         // @ts-ignore
         this.animationManager = new BgaAnimations.Manager();
-        // @ts-ignore
-        this.testStocks = [];
         this.cardManager = new CardsManager(this);
         this.bga = bga;
     }
@@ -56,7 +54,6 @@ class Game {
         while (gamedatas.playerorder[0] != this.bga.players.getCurrentPlayerId()) {
             playerOrder.push(playerOrder.shift());
         }
-        let i = 0;
         playerOrder.forEach(id => {
             let info = gamedatas.players[id];
             $('game_play_area').insertAdjacentHTML("beforeend", /*html*/ `
@@ -68,9 +65,12 @@ class Game {
                     </div>
                 </div>
             `);
-            this.testStocks.push(new BgaCards.LineStock(this.cardManager, $(`test_card_${info.id}`)));
-            this.testStocks[i].addCard({ name: "test", id: i, type: Types.Farmer });
-            i++;
+            for (let i = 0; i < 5; i++) {
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_bank_${info.id}_${i}" class="turnip turnip_${i}"></div>`);
+            }
+            for (let i = 0; i < 3; i++) {
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="relic_bank_${info.id}_${i}" class="relic relic_${i}"></div>`);
+            }
         });
     }
     onEnteringState(stateName, args) {
