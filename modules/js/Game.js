@@ -51,9 +51,14 @@ class Game {
     setup(gamedatas) {
         this.gamedatas = gamedatas;
         this.setupNotifications();
+        // @ts-ignore
+        let playerOrder = gamedatas.playerorder;
+        while (gamedatas.playerorder[0] != this.bga.players.getCurrentPlayerId()) {
+            playerOrder.push(playerOrder.shift());
+        }
         let i = 0;
-        Object.entries(gamedatas.players).forEach(el => {
-            let info = el[1];
+        playerOrder.forEach(id => {
+            let info = gamedatas.players[id];
             $('game_play_area').insertAdjacentHTML("beforeend", /*html*/ `
                 <div id="player_area_${info.id}" class="player_area whiteblock">
                     <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}</div>

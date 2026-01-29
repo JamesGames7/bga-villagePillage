@@ -25,9 +25,15 @@ export class Game implements VillagePillageGame {
         this.gamedatas = gamedatas;
         this.setupNotifications();
 
+        // @ts-ignore
+        let playerOrder: number[] = gamedatas.playerorder;
+        while (gamedatas.playerorder[0] != this.bga.players.getCurrentPlayerId()) {
+            playerOrder.push(playerOrder.shift());
+        }
+
         let i: number = 0;
-        Object.entries(gamedatas.players).forEach(el => {
-            let info: VillagePillagePlayer = el[1];
+        playerOrder.forEach(id => {
+            let info: VillagePillagePlayer = gamedatas.players[id];
 
             $('game_play_area').insertAdjacentHTML("beforeend", /*html*/`
                 <div id="player_area_${info.id}" class="player_area whiteblock">
