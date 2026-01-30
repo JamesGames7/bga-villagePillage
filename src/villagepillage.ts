@@ -2,6 +2,7 @@ import { CardsManager } from "./cards";
 import { BgaCards, BgaAnimations } from "./libs";
 import { Card } from "./docs/cards";
 import { Types } from "./cards";
+import { VillagePillageGame, VillagePillageGamedatas, VillagePillagePlayer } from "./docs/villagepillage";
 
 export class Game implements VillagePillageGame {
     public animationManager: InstanceType<typeof BgaAnimations.Manager> = new BgaAnimations.Manager();
@@ -75,13 +76,16 @@ export class Game implements VillagePillageGame {
                     selectableSlotStyle: {class: "selectable"},
                 }),
             }
+
+            if (info.left) {
+                this.leftRightStocks[info.id].left.addCard(info.left);
+                this.leftRightStocks[info.id].right.addCard(info.right);
+            }
         })
 
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
         this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), {sort: this.sortFunction});
-        gamedatas.hand.forEach(card => {
-            this.handStock.addCard({name: card.name, id: card.id, type: Types[card.type]})
-        })
+        this.handStock.addCards(gamedatas.hand);
         this.handStock.onSelectionChange = (selection: Card[], lastChange: Card) => {
             let playerStocks: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>} = this.leftRightStocks[this.player_id];
 
@@ -121,9 +125,7 @@ export class Game implements VillagePillageGame {
         
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), {sort: this.sortFunction});
-        gamedatas.shop.forEach(card => {
-            this.shopStock.addCard({name: card.name, id: card.id, type: Types[card.type]})
-        })
+        this.shopStock.addCards(gamedatas.shop);
     } 
 
     private sortFunction(a: Card, b: Card): number {

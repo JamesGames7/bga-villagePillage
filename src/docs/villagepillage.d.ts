@@ -1,16 +1,20 @@
-interface VillagePillagePlayer extends Player {
+import { Card } from "./cards";
+
+export interface VillagePillagePlayer extends Player {
     // any information you add on each result['players']
     bank: string;
     stockpile: string;
+    left: Card | null;
+    right: Card | null;
 }
 
-interface VillagePillageGamedatas extends Gamedatas<VillagePillagePlayer> {
+export interface VillagePillageGamedatas extends Gamedatas<VillagePillagePlayer> {
     // Add here variables you set up in getAllDatas
-    hand: {name: string, type: string, id: number}[];
-    shop: {name: string, type: string, id: number}[];
+    hand: Card[];
+    shop: Card[];
 }
 
-interface VillagePillageGame {
+export interface VillagePillageGame {
     // @ts-ignore
     animationManager: BgaAnimations.Manager;
 

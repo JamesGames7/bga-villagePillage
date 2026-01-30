@@ -30,7 +30,7 @@ class Card {
         return $this->id;
     }
 
-    public function getInfo() {
-        return ["name" => $this->name, "type" => $this->type, "id" => $this->id];
+    public function getInfo(string | int $player_id) {
+        return ["name" => $this->name, "type" => $this->type, "id" => $this->id, "player_id" => strval($player_id)];
     }
 }

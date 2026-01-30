@@ -1,10 +1,11 @@
 import { BgaCards, BgaAnimations } from "./libs";
 import { Card } from "./docs/cards";
+import { VillagePillageGame } from "./docs/villagepillage";
 
 export class CardsManager extends BgaCards.Manager<Card> {
     constructor (public game: VillagePillageGame) {
         super({
-            getId: (card: Card) => card.id,
+            getId: (card: Card) => card.player_id + "-" + card.id,
             setupDiv: (card: Card, div: HTMLElement) => {
                 div.dataset.id = card.id.toString();
                 div.dataset.type = card.type;

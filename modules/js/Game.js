@@ -4,7 +4,7 @@ const BgaCards = await globalThis.importEsmLib('bga-cards', '1.x');
 class CardsManager extends BgaCards.Manager {
     constructor(game) {
         super({
-            getId: (card) => card.id,
+            getId: (card) => card.player_id + "-" + card.id,
             setupDiv: (card, div) => {
                 div.dataset.id = card.id.toString();
                 div.dataset.type = card.type;
@@ -96,12 +96,14 @@ class Game {
                     selectableSlotStyle: { class: "selectable" },
                 }),
             };
+            if (info.left) {
+                this.leftRightStocks[info.id].left.addCard(info.left);
+                this.leftRightStocks[info.id].right.addCard(info.right);
+            }
         });
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
         this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), { sort: this.sortFunction });
-        gamedatas.hand.forEach(card => {
-            this.handStock.addCard({ name: card.name, id: card.id, type: Types[card.type] });
-        });
+        this.handStock.addCards(gamedatas.hand);
         this.handStock.onSelectionChange = (selection, lastChange) => {
             let playerStocks = this.leftRightStocks[this.player_id];
             if (this.handStock.getSelection().length > 0) {
@@ -137,9 +139,7 @@ class Game {
         };
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction });
-        gamedatas.shop.forEach(card => {
-            this.shopStock.addCard({ name: card.name, id: card.id, type: Types[card.type] });
-        });
+        this.shopStock.addCards(gamedatas.shop);
     }
     sortFunction(a, b) {
         let order = [Types.Farmer, Types.Wall, Types.Raider, Types.Merchant];
