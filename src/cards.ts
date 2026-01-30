@@ -24,7 +24,6 @@ export class CardsManager extends BgaCards.Manager<Card> {
             },
             cardBorderRadius: "4px",
 
-            // TODO change
             isCardVisible: () => true,
 
             animationManager: game.animationManager,

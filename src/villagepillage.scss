@@ -67,3 +67,7 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
         background-position-x: $i * -100%;
     }
 }
+
+.hand-stock .game-card:hover {
+    z-index: 1;
+}

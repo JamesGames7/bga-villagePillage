@@ -22,7 +22,6 @@ class CardsManager extends BgaCards.Manager {
                 div.style.backgroundPosition = `-600% 0`;
             },
             cardBorderRadius: "4px",
-            // TODO change
             isCardVisible: () => true,
             animationManager: game.animationManager,
             cardWidth: 200,
@@ -41,7 +40,6 @@ var Types;
 
 class Game {
     constructor(bga) {
-        // @ts-ignore
         this.animationManager = new BgaAnimations.Manager();
         this.cardManager = new CardsManager(this);
         this.bga = bga;
@@ -49,9 +47,10 @@ class Game {
     setup(gamedatas) {
         this.gamedatas = gamedatas;
         this.setupNotifications();
+        let currentPlayerId = this.bga.players.getCurrentPlayerId();
         // @ts-ignore
         let playerOrder = gamedatas.playerorder;
-        while (gamedatas.playerorder[0] != this.bga.players.getCurrentPlayerId()) {
+        while (gamedatas.playerorder[0] != currentPlayerId) {
             playerOrder.push(playerOrder.shift());
         }
         playerOrder.forEach(id => {
@@ -72,6 +71,12 @@ class Game {
                 $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="relic_bank_${info.id}_${i}" class="relic relic_${i}"></div>`);
             }
         });
+        $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
+        this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), {});
+        this.handStock.addCard({ name: "Raider", id: 8, type: Types.Raider });
+        this.handStock.addCard({ name: "Wall", id: 4, type: Types.Wall });
+        this.handStock.addCard({ name: "Farmer", id: 0, type: Types.Farmer });
+        this.handStock.addCard({ name: "Merchant", id: 1, type: Types.Merchant });
     }
     onEnteringState(stateName, args) {
     }

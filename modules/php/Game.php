@@ -19,14 +19,16 @@ declare(strict_types=1);
 namespace Bga\Games\VillagePillageJames;
 
 use Bga\Games\VillagePillageJames\States\PlayerTurn;
-use Bga\GameFramework\Components\Counters\PlayerCounter;
+use Card;
+require_once('Card.php');
+use Types;
 
 class Game extends \Bga\GameFramework\Table
 {
-    public static array $CARD_TYPES;
+    public $CARDS;
+    public $START_CARDS;
 
-    public PlayerCounter $playerEnergy;
-
+    public $cards;
     /**
      * Your global variables labels:
      *
@@ -56,6 +58,37 @@ class Game extends \Bga\GameFramework\Table
             
             return $args;
         });*/
+
+        $this->CARDS =  [
+            new Card("Cutpurse", Types::Raider, 2),
+            new Card("Doctor", Types::Merchant, 3),
+            new Card("Dungeon", Types::Wall, 5),
+            new Card("Bard", Types::Merchant, 6),
+            new Card("Moat", Types::Wall, 7),
+            new Card("Berserker", Types::Raider, 9),
+            new Card("Florist", Types::Farmer, 10),
+            new Card("Toll Bridge", Types::Wall, 11),
+            new Card("Outlaw", Types::Raider, 12),
+            new Card("Veteran", Types::Raider, 13),
+            new Card("Mason", Types::Farmer, 14),
+            new Card("Treasury", Types::Wall, 15),
+            new Card("Burglar", Types::Raider, 16),
+            new Card("Trapper", Types::Raider, 17),
+            new Card("Innkeeper", Types::Farmer, 18),
+            new Card("Labyrinth", Types::Wall, 19),
+            new Card("Pickler", Types::Farmer, 20),
+            new Card("Miner", Types::Farmer, 21),
+            new Card("Cathedral", Types::Wall, 22),
+            new Card("Rat Catcher", Types::Farmer, 23),
+        ];  
+        $this->START_CARDS = [
+            new Card("Farmer", Types::Farmer, 0),
+            new Card("Merchant", Types::Merchant, 1),
+            new Card("Wall", Types::Wall, 4),
+            new Card("Raider", Types::Raider, 8),
+        ];
+
+        $this->cards = $this->deckFactory->createDeck("card");
     }
 
     /**
@@ -164,6 +197,15 @@ class Game extends \Bga\GameFramework\Table
 
         $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
         $this->reloadPlayersBasicInfos();
+
+        $sample_cards = array_map(fn($card) => ["type" => $card->getType()->value, "type_arg" => $card->getId(), 'nbr' => 1], $this->CARDS);
+
+        $this->cards->createCards($sample_cards);
+
+        $sample_startCards = array_map(fn($card) => ["type" => $card->getType()->value, "type_arg" => $card->getId(), "nbr" => 1], $this->START_CARDS);
+        foreach (array_keys($players) as $id) {
+            $this->cards->createCards($sample_startCards, "hand", $id);
+        }
 
         // Init global values with their initial values.
 

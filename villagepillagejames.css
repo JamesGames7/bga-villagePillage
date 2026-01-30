@@ -79,3 +79,7 @@
   top: 177px;
   background-position-x: -200%;
 }
+
+.hand-stock .game-card:hover {
+  z-index: 1;
+}
