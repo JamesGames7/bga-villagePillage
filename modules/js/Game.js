@@ -24,6 +24,8 @@ class CardsManager extends BgaCards.Manager {
                 div.style.backgroundPosition = `-600% 0`;
             },
             cardBorderRadius: "4px",
+            selectableCardStyle: { class: "selectable" },
+            selectedCardStyle: { class: "selected" },
             isCardVisible: () => true,
             animationManager: game.animationManager,
             cardWidth: 200,
@@ -44,15 +46,16 @@ class Game {
     constructor(bga) {
         this.animationManager = new BgaAnimations.Manager();
         this.cardManager = new CardsManager(this);
+        this.leftRightStocks = {};
         this.bga = bga;
     }
     setup(gamedatas) {
         this.gamedatas = gamedatas;
         this.setupNotifications();
-        let currentPlayerId = this.bga.players.getCurrentPlayerId();
+        this.player_id = this.bga.players.getCurrentPlayerId();
         // @ts-ignore
         let playerOrder = gamedatas.playerorder;
-        while (gamedatas.playerorder[0] != currentPlayerId) {
+        while (gamedatas.playerorder[0] != this.player_id) {
             playerOrder.push(playerOrder.shift());
         }
         playerOrder.forEach(id => {
@@ -79,13 +82,59 @@ class Game {
                 $(`turnip_stockpile_${info.id}_${i}`).style.top = Math.random() * 237 + "px";
                 $(`turnip_stockpile_${info.id}_${i}`).style.left = Math.random() * 140 + "px";
             }
-            console.log(info);
+            $(`player_contents_${info.id}`).insertAdjacentHTML("afterbegin", `<div id="left_card_${info.id}" class="left_card"></div>`);
+            $(`player_contents_${info.id}`).insertAdjacentHTML("beforeend", `<div id="right_card_${info.id}" class="right_card"></div>`);
+            this.leftRightStocks[info.id] = {
+                left: new BgaCards.SlotStock(this.cardManager, $(`left_card_${info.id}`), {
+                    mapCardToSlot: (card) => 0, slotsIds: [0],
+                    selectedSlotStyle: { class: "selected" },
+                    selectableSlotStyle: { class: "selectable" },
+                }),
+                right: new BgaCards.SlotStock(this.cardManager, $(`right_card_${info.id}`), {
+                    mapCardToSlot: (card) => 0, slotsIds: [0],
+                    selectedSlotStyle: { class: "selected" },
+                    selectableSlotStyle: { class: "selectable" },
+                }),
+            };
         });
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
         this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), { sort: this.sortFunction });
         gamedatas.hand.forEach(card => {
             this.handStock.addCard({ name: card.name, id: card.id, type: Types[card.type] });
         });
+        this.handStock.onSelectionChange = (selection, lastChange) => {
+            let playerStocks = this.leftRightStocks[this.player_id];
+            if (this.handStock.getSelection().length > 0) {
+                playerStocks.left.setSlotSelectionMode("single");
+                playerStocks.right.setSlotSelectionMode("single");
+                playerStocks.left.onSlotClick = async (slotId) => {
+                    await this.handStock.addCards(playerStocks.left.getCards());
+                    await playerStocks.left.addCard(this.handStock.getSelection()[0]);
+                    if (playerStocks.right.getCardCount() == 1) {
+                        $('confirm_button').disabled = false;
+                    }
+                    else {
+                        $('confirm_button').disabled = true;
+                    }
+                };
+                playerStocks.right.onSlotClick = async (slotId) => {
+                    await this.handStock.addCards(playerStocks.right.getCards());
+                    await playerStocks.right.addCard(this.handStock.getSelection()[0]);
+                    if (playerStocks.left.getCardCount() == 1) {
+                        $('confirm_button').disabled = false;
+                    }
+                    else {
+                        $('confirm_button').disabled = true;
+                    }
+                };
+            }
+            else {
+                playerStocks.left.setSlotSelectionMode("none");
+                playerStocks.right.setSlotSelectionMode("none");
+                playerStocks.left.onSlotClick = (slotId) => { };
+                playerStocks.right.onSlotClick = (slotId) => { };
+            }
+        };
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction });
         gamedatas.shop.forEach(card => {
@@ -97,12 +146,45 @@ class Game {
         return order.indexOf(a.type) - order.indexOf(b.type);
     }
     onEnteringState(stateName, args) {
+        switch (stateName) {
+            case "PlayCard":
+                this.handStock.setSelectionMode("single");
+                break;
+        }
     }
     onLeavingState(stateName) {
     }
     onUpdateActionButtons(stateName, args) {
+        switch (stateName) {
+            case "PlayCard":
+                if (this.bga.players.isCurrentPlayerActive()) {
+                    this.bga.statusBar.addActionButton("Confirm", () => this.bga.actions.performAction("actChooseCards", {
+                        leftId: this.leftRightStocks[this.player_id].left.getCards()[0].id,
+                        rightId: this.leftRightStocks[this.player_id].right.getCards()[0].id
+                    }), { disabled: true, id: "confirm_button" });
+                    this.bga.statusBar.addActionButton("Reset", async () => {
+                        let playerStocks = this.leftRightStocks[this.player_id];
+                        await this.handStock.addCards(playerStocks.left.getCards());
+                        await this.handStock.addCards(playerStocks.right.getCards());
+                        $('confirm_button').disabled = true;
+                    }, { color: "secondary" });
+                    break;
+                }
+                else {
+                    this.bga.statusBar.addActionButton("Restart Turn", () => this.bga.actions.performAction("actRestartTurn", {}, { checkAction: false }), { color: "alert" });
+                }
+        }
     }
-    setupNotifications() { }
+    setupNotifications() {
+        this.bga.notifications.setupPromiseNotifications();
+    }
+    async notif_restartTurn(args) {
+        await this.handStock.addCards(this.leftRightStocks[this.player_id].left.getCards());
+        await this.handStock.addCards(this.leftRightStocks[this.player_id].right.getCards());
+    }
+    notif_test(args) {
+        console.log(args);
+    }
 }
 
 export { Game };

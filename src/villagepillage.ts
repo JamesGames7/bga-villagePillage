@@ -12,8 +12,11 @@ export class Game implements VillagePillageGame {
     private gamedatas: VillagePillageGamedatas;
     
     public handStock: InstanceType<typeof BgaCards.HandStock<Card>>;
+    public leftRightStocks: {[key: number]: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>}} = {};
 
     public shopStock: InstanceType<typeof BgaCards.LineStock<Card>>;
+
+    private player_id: number;
 
     constructor(bga: Bga<VillagePillageGamedatas>) {
         this.bga = bga;
@@ -23,11 +26,11 @@ export class Game implements VillagePillageGame {
     public setup(gamedatas: VillagePillageGamedatas) {
         this.gamedatas = gamedatas;
         this.setupNotifications();
-        let currentPlayerId: number = this.bga.players.getCurrentPlayerId();
 
+        this.player_id = this.bga.players.getCurrentPlayerId();
         // @ts-ignore
         let playerOrder: number[] = gamedatas.playerorder;
-        while (gamedatas.playerorder[0] != currentPlayerId) {
+        while (gamedatas.playerorder[0] != this.player_id) {
             playerOrder.push(playerOrder.shift());
         }
 
@@ -57,7 +60,21 @@ export class Game implements VillagePillageGame {
                 $(`turnip_stockpile_${info.id}_${i}`).style.left = Math.random() * 140 + "px";
             }
 
-            console.log(info);
+            $(`player_contents_${info.id}`).insertAdjacentHTML("afterbegin", `<div id="left_card_${info.id}" class="left_card"></div>`);
+            $(`player_contents_${info.id}`).insertAdjacentHTML("beforeend", `<div id="right_card_${info.id}" class="right_card"></div>`);
+
+            this.leftRightStocks[info.id] = {
+                left: new BgaCards.SlotStock(this.cardManager, $(`left_card_${info.id}`), {
+                    mapCardToSlot: (card) => 0, slotsIds: [0],
+                    selectedSlotStyle: {class: "selected"},
+                    selectableSlotStyle: {class: "selectable"},
+                }),
+                right: new BgaCards.SlotStock(this.cardManager, $(`right_card_${info.id}`), {
+                    mapCardToSlot: (card) => 0, slotsIds: [0],
+                    selectedSlotStyle: {class: "selected"},
+                    selectableSlotStyle: {class: "selectable"},
+                }),
+            }
         })
 
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
@@ -65,6 +82,42 @@ export class Game implements VillagePillageGame {
         gamedatas.hand.forEach(card => {
             this.handStock.addCard({name: card.name, id: card.id, type: Types[card.type]})
         })
+        this.handStock.onSelectionChange = (selection: Card[], lastChange: Card) => {
+            let playerStocks: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>} = this.leftRightStocks[this.player_id];
+
+            if (this.handStock.getSelection().length > 0) {
+                playerStocks.left.setSlotSelectionMode("single");
+                playerStocks.right.setSlotSelectionMode("single");
+
+                playerStocks.left.onSlotClick = async (slotId) => {
+                    await this.handStock.addCards(playerStocks.left.getCards());
+                    await playerStocks.left.addCard(this.handStock.getSelection()[0]);
+
+                    if (playerStocks.right.getCardCount() == 1) {
+                        ($('confirm_button') as any).disabled = false;
+                    } else {
+                        ($('confirm_button') as any).disabled = true;
+                    }
+                }
+
+                playerStocks.right.onSlotClick = async (slotId) => {
+                    await this.handStock.addCards(playerStocks.right.getCards());
+                    await playerStocks.right.addCard(this.handStock.getSelection()[0]);
+
+                    if (playerStocks.left.getCardCount() == 1) {
+                        ($('confirm_button') as any).disabled = false;
+                    } else {
+                        ($('confirm_button') as any).disabled = true;
+                    }
+                }
+            } else {
+                playerStocks.left.setSlotSelectionMode("none");
+                playerStocks.right.setSlotSelectionMode("none");
+
+                playerStocks.left.onSlotClick = (slotId) => {};
+                playerStocks.right.onSlotClick = (slotId) => {};
+            }
+        }
         
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), {sort: this.sortFunction});
@@ -79,7 +132,11 @@ export class Game implements VillagePillageGame {
     }
 
     public onEnteringState(stateName: string, args: any) {
-
+        switch (stateName) {
+            case "PlayCard":
+                this.handStock.setSelectionMode("single");
+                break;
+        }
     }
 
     public onLeavingState(stateName: string) {
@@ -87,8 +144,38 @@ export class Game implements VillagePillageGame {
     }
 
     public onUpdateActionButtons(stateName: string, args: any) {
+        switch (stateName) {
+            case "PlayCard":
+                if (this.bga.players.isCurrentPlayerActive()) {
+                    this.bga.statusBar.addActionButton("Confirm", () => this.bga.actions.performAction("actChooseCards", {
+                        leftId: this.leftRightStocks[this.player_id].left.getCards()[0].id, 
+                        rightId: this.leftRightStocks[this.player_id].right.getCards()[0].id
+                    }), {disabled: true, id: "confirm_button"})
+                    this.bga.statusBar.addActionButton("Reset", async () => {
+                        let playerStocks: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>} = this.leftRightStocks[this.player_id];
+                        
+                        await this.handStock.addCards(playerStocks.left.getCards());
+                        await this.handStock.addCards(playerStocks.right.getCards());
 
+                        ($('confirm_button') as any).disabled = true;
+                    }, {color: "secondary"})
+                    break;
+                } else {
+                    this.bga.statusBar.addActionButton("Restart Turn", () => this.bga.actions.performAction("actRestartTurn", {}, {checkAction: false}), {color: "alert"});
+                }
+        }
     }
 
-    public setupNotifications() {}
+    public setupNotifications() {
+        this.bga.notifications.setupPromiseNotifications();
+    }
+
+    public async notif_restartTurn(args: any) {
+        await this.handStock.addCards(this.leftRightStocks[this.player_id].left.getCards());
+        await this.handStock.addCards(this.leftRightStocks[this.player_id].right.getCards());
+    }
+
+	public notif_test(args: any) {
+		console.log(args);
+	}
 }

@@ -17,12 +17,20 @@
     display: flex;
     flex-direction: row;
     gap: 10px;
+    justify-content: center;
 }
 
 .player_area {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    align-items: center;
+}
+
+.player_area_name {
+    width: 400px;
+    display: flex;
+    justify-content: center;
 }
 
 .turnip {
@@ -69,6 +77,15 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
     z-index: 1;
 }
 
+.hand-stock.floating {
+    bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height) - 200px) !important;
+    transition: all 0.8s ease;
+
+    &:hover {
+        bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height)) !important;;
+    }
+}
+
 .stockpile {
     width: 200px;
     aspect-ratio: 482 / 719;
@@ -77,4 +94,27 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
 
 .hidden {
     opacity: 0;
+}
+
+.selected, .selectable {
+    outline-width: 3px;
+    outline-style: solid;
+
+    cursor: pointer;
+}
+
+.selected {
+    outline-color: red;
+
+    &.game-card-front {
+        transform: translateY(calc(var(--bga-cards_card-height)/-5));
+    }
+}
+
+.selectable {
+    outline-color: black;
+
+    &:hover {
+        outline-color: red;
+    }
 }

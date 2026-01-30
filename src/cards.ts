@@ -27,6 +27,9 @@ export class CardsManager extends BgaCards.Manager<Card> {
             },
             cardBorderRadius: "4px",
 
+            selectableCardStyle: {class: "selectable"},
+            selectedCardStyle: {class: "selected"},
+
             isCardVisible: () => true,
 
             animationManager: game.animationManager,

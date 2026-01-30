@@ -18,6 +18,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\VillagePillageJames;
 
+use Bga\Games\VillagePillageJames\States\PlayCard;
+use Bga\Games\VillagePillageJames\States\PlayCard as StatesPlayCard;
 use Bga\Games\VillagePillageJames\States\PlayerTurn;
 use Card;
 require_once('Card.php');
@@ -228,7 +230,7 @@ class Game extends \Bga\GameFramework\Table
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
 
-        return PlayerTurn::class;
+        return PlayCard::class;
     }
 
     /**
