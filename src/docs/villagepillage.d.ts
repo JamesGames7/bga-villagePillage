@@ -4,6 +4,7 @@ interface VillagePillagePlayer extends Player {
 
 interface VillagePillageGamedatas extends Gamedatas<VillagePillagePlayer> {
     // Add here variables you set up in getAllDatas
+    hand: {name: string, type: string, id: number}[];
 }
 
 interface VillagePillageGame {

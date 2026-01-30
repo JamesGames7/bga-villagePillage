@@ -50,12 +50,17 @@ export class Game implements VillagePillageGame {
         })
 
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
-        this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), {});
-        this.handStock.addCard({name: "Raider", id: 8, type: Types.Raider})
-        this.handStock.addCard({name: "Wall", id: 4, type: Types.Wall})
-        this.handStock.addCard({name: "Farmer", id: 0, type: Types.Farmer})
-        this.handStock.addCard({name: "Merchant", id: 1, type: Types.Merchant})
+        this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), {sort: this.sortFunction});
+        console.log(gamedatas);
+        gamedatas.hand.forEach(card => {
+            this.handStock.addCard({name: card.name, id: card.id, type: Types[card.type]})
+        })
     } 
+
+    private sortFunction(a: Card, b: Card): number {
+        let order = [Types.Farmer, Types.Wall, Types.Raider, Types.Merchant];
+        return order.indexOf(a.type) - order.indexOf(b.type);
+    }
 
     public onEnteringState(stateName: string, args: any) {
 

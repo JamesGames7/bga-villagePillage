@@ -29,4 +29,8 @@ class Card {
     public function getId() {
         return $this->id;
     }
+
+    public function getInfo() {
+        return ["name" => $this->name, "type" => $this->type, "id" => $this->id];
+    }
 }

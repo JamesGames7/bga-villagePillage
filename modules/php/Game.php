@@ -156,8 +156,8 @@ class Game extends \Bga\GameFramework\Table
         $result["players"] = $this->getCollectionFromDb(
             "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
         );
-
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        
+        $result["hand"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo(), $this->cards->getCardsInLocation("hand", $currentPlayerId)));
 
         return $result;
     }
@@ -198,11 +198,11 @@ class Game extends \Bga\GameFramework\Table
         $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
         $this->reloadPlayersBasicInfos();
 
-        $sample_cards = array_map(fn($card) => ["type" => $card->getType()->value, "type_arg" => $card->getId(), 'nbr' => 1], $this->CARDS);
+        $sample_cards = array_map(fn($card) => ["type" => $card->getName(), "type_arg" => $card->getId(), 'nbr' => 1], $this->CARDS);
 
         $this->cards->createCards($sample_cards);
 
-        $sample_startCards = array_map(fn($card) => ["type" => $card->getType()->value, "type_arg" => $card->getId(), "nbr" => 1], $this->START_CARDS);
+        $sample_startCards = array_map(fn($card) => ["type" => $card->getName(), "type_arg" => $card->getId(), "nbr" => 1], $this->START_CARDS);
         foreach (array_keys($players) as $id) {
             $this->cards->createCards($sample_startCards, "hand", $id);
         }
