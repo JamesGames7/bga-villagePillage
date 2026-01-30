@@ -13,6 +13,8 @@ export class Game implements VillagePillageGame {
     
     public handStock: InstanceType<typeof BgaCards.HandStock<Card>>;
 
+    public shopStock: InstanceType<typeof BgaCards.LineStock<Card>>;
+
     constructor(bga: Bga<VillagePillageGamedatas>) {
         this.bga = bga;
     }
@@ -37,23 +39,37 @@ export class Game implements VillagePillageGame {
                     <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}</div>
                     <div id="player_contents_${info.id}" class="player_contents">
                         <div id="bank_${info.id}" class="bank"></div>
-                        <div id="test_card_${info.id}" class="test"></div>
+                        <div id="stockpile_${info.id}" class="stockpile"></div>
                     </div>
                 </div>
             `)
             for (let i = 0; i < 5; i++) {
                 $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_bank_${info.id}_${i}" class="turnip turnip_${i}"></div>`);
+                if (i >= parseInt(info.bank)) $(`turnip_bank_${info.id}_${i}`).classList.add("hidden");
             }
             for (let i = 0; i < 3; i++) {
-                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="relic_bank_${info.id}_${i}" class="relic relic_${i}"></div>`);
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="relic_bank_${info.id}_${i}" class="relic relic_${i} hidden"></div>`);
             }
+
+            for (let i = 0; i < parseInt(info.stockpile); i++) {
+                $(`stockpile_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_stockpile_${info.id}_${i}" class="turnip turnip_stockpile"></div>`);
+                $(`turnip_stockpile_${info.id}_${i}`).style.top = Math.random() * 237 + "px";
+                $(`turnip_stockpile_${info.id}_${i}`).style.left = Math.random() * 140 + "px";
+            }
+
+            console.log(info);
         })
 
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
         this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), {sort: this.sortFunction});
-        console.log(gamedatas);
         gamedatas.hand.forEach(card => {
             this.handStock.addCard({name: card.name, id: card.id, type: Types[card.type]})
+        })
+        
+        $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
+        this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), {sort: this.sortFunction});
+        gamedatas.shop.forEach(card => {
+            this.shopStock.addCard({name: card.name, id: card.id, type: Types[card.type]})
         })
     } 
 

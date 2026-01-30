@@ -154,10 +154,12 @@ class Game extends \Bga\GameFramework\Table
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
         $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
+            "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank` FROM `player`"
         );
         
         $result["hand"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo(), $this->cards->getCardsInLocation("hand", $currentPlayerId)));
+
+        $result["shop"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo(), $this->cards->getCardsInLocation("shop")));
 
         return $result;
     }
@@ -206,6 +208,10 @@ class Game extends \Bga\GameFramework\Table
         foreach (array_keys($players) as $id) {
             $this->cards->createCards($sample_startCards, "hand", $id);
         }
+
+        $this->cards->shuffle("deck");
+
+        $this->cards->pickCardsForLocation(4, "deck", "shop");
 
         // Init global values with their initial values.
 

@@ -26,7 +26,6 @@
   position: absolute;
   background-image: url("img/turnip.png");
   background-size: 100% 100%;
-  opacity: 0;
 }
 
 .turnip_0 {
@@ -62,7 +61,6 @@
   background-size: 300% 100%;
   transform: scaleX(-1);
   left: 12px;
-  opacity: 0;
 }
 
 .relic_0 {
@@ -82,4 +80,14 @@
 
 .hand-stock .game-card:hover {
   z-index: 1;
+}
+
+.stockpile {
+  width: 200px;
+  aspect-ratio: 482/719;
+  position: relative;
+}
+
+.hidden {
+  opacity: 0;
 }
