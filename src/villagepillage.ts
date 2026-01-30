@@ -136,7 +136,9 @@ export class Game implements VillagePillageGame {
     public onEnteringState(stateName: string, args: any) {
         switch (stateName) {
             case "PlayCard":
-                this.handStock.setSelectionMode("single");
+                if (this.bga.players.isCurrentPlayerActive()) {
+                    this.handStock.setSelectionMode("single");
+                }
                 break;
         }
     }
@@ -149,10 +151,13 @@ export class Game implements VillagePillageGame {
         switch (stateName) {
             case "PlayCard":
                 if (this.bga.players.isCurrentPlayerActive()) {
-                    this.bga.statusBar.addActionButton("Confirm", () => this.bga.actions.performAction("actChooseCards", {
-                        leftId: this.leftRightStocks[this.player_id].left.getCards()[0].id, 
-                        rightId: this.leftRightStocks[this.player_id].right.getCards()[0].id
-                    }), {disabled: true, id: "confirm_button"})
+                    this.bga.statusBar.addActionButton("Confirm", () => {
+                        this.bga.actions.performAction("actChooseCards", {
+                            leftId: this.leftRightStocks[this.player_id].left.getCards()[0].id, 
+                            rightId: this.leftRightStocks[this.player_id].right.getCards()[0].id
+                        })
+                        this.handStock.setSelectionMode("none");
+                    }, {disabled: true, id: "confirm_button"})
                     this.bga.statusBar.addActionButton("Reset", async () => {
                         let playerStocks: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>} = this.leftRightStocks[this.player_id];
                         
@@ -175,6 +180,7 @@ export class Game implements VillagePillageGame {
     public async notif_restartTurn(args: any) {
         await this.handStock.addCards(this.leftRightStocks[this.player_id].left.getCards());
         await this.handStock.addCards(this.leftRightStocks[this.player_id].right.getCards());
+        this.handStock.setSelectionMode("single");
     }
 
 	public notif_test(args: any) {
