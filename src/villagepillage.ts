@@ -60,8 +60,6 @@ export class Game implements VillagePillageGame {
 
             for (let i = 0; i < parseInt(info.stockpile); i++) {
                 $(`stockpile_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_stockpile_${info.id}_${i}" class="turnip turnip_stockpile"></div>`);
-                $(`turnip_stockpile_${info.id}_${i}`).style.top = Math.random() * 237 + "px";
-                $(`turnip_stockpile_${info.id}_${i}`).style.left = Math.random() * 140 + "px";
             }
 
             $(`player_contents_${info.id}`).insertAdjacentHTML("afterbegin", `<div id="left_card_${info.id}" class="left_card"></div>`);
@@ -194,11 +192,10 @@ export class Game implements VillagePillageGame {
     public async notif_gain(args: {player_id: number, num: number, prevNum: number}) {
         for (let i = args.prevNum; i < args.num + args.prevNum; i++) {
             $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
-            $(`turnip_stockpile_${args.player_id}_${i}`).style.top = Math.random() * 237 + "px";
-            $(`turnip_stockpile_${args.player_id}_${i}`).style.left = Math.random() * 140 + "px";
 
-            this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`))
+            await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200})
         }
+        await new Promise(r => setTimeout(r, 500))
     }
 
 	public notif_test(args: any) {

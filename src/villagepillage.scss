@@ -49,8 +49,6 @@
     width: 60px;
     aspect-ratio: 495 / 504;
 
-    position: absolute;
-
     background-image: url('img/turnip.png');
     background-size: 100% 100%;
 }
@@ -59,6 +57,7 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
 
 @for $i from 0 through 4 {
     .turnip_#{$i} {
+        position: absolute;
         top: calc($i * 29.5px + 60px);
         left: list.nth($left_pos, $i + 1);
     }
@@ -101,7 +100,10 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
 .stockpile {
     width: 200px;
     aspect-ratio: 482 / 719;
-    position: relative;
+    display: flex;
+    align-content: start;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .hidden {

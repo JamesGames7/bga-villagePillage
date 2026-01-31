@@ -43,32 +43,36 @@
 .turnip {
   width: 60px;
   aspect-ratio: 495/504;
-  position: absolute;
   background-image: url("img/turnip.png");
   background-size: 100% 100%;
 }
 
 .turnip_0 {
+  position: absolute;
   top: 60px;
   left: 128px;
 }
 
 .turnip_1 {
+  position: absolute;
   top: 89.5px;
   left: 82px;
 }
 
 .turnip_2 {
+  position: absolute;
   top: 119px;
   left: 130px;
 }
 
 .turnip_3 {
+  position: absolute;
   top: 148.5px;
   left: 82px;
 }
 
 .turnip_4 {
+  position: absolute;
   top: 178px;
   left: 128px;
 }
@@ -113,7 +117,10 @@
 .stockpile {
   width: 200px;
   aspect-ratio: 482/719;
-  position: relative;
+  display: flex;
+  align-content: start;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 .hidden {

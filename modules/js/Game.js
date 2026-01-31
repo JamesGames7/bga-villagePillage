@@ -83,8 +83,6 @@ class Game {
             }
             for (let i = 0; i < parseInt(info.stockpile); i++) {
                 $(`stockpile_${info.id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_stockpile_${info.id}_${i}" class="turnip turnip_stockpile"></div>`);
-                $(`turnip_stockpile_${info.id}_${i}`).style.top = Math.random() * 237 + "px";
-                $(`turnip_stockpile_${info.id}_${i}`).style.left = Math.random() * 140 + "px";
             }
             $(`player_contents_${info.id}`).insertAdjacentHTML("afterbegin", `<div id="left_card_${info.id}" class="left_card"></div>`);
             $(`player_contents_${info.id}`).insertAdjacentHTML("beforeend", `<div id="right_card_${info.id}" class="right_card"></div>`);
@@ -199,10 +197,9 @@ class Game {
     async notif_gain(args) {
         for (let i = args.prevNum; i < args.num + args.prevNum; i++) {
             $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
-            $(`turnip_stockpile_${args.player_id}_${i}`).style.top = Math.random() * 237 + "px";
-            $(`turnip_stockpile_${args.player_id}_${i}`).style.left = Math.random() * 140 + "px";
-            this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`));
+            await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
         }
+        await new Promise(r => setTimeout(r, 500));
     }
     notif_test(args) {
         console.log(args);
