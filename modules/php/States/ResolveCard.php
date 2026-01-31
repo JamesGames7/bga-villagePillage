@@ -68,7 +68,8 @@ class ResolveCard extends GameState
             $i++;
         }
 
-        
+        $this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
+        $this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
 
         return "";
     }   
@@ -83,7 +84,8 @@ class ResolveCard extends GameState
             "player_id" => $player_id,
             "player_name" => $this->game->getPlayerNameById($player_id),
             "num" => $num,
-            "card_name" => $args["card_name"]
+            "card_name" => $args["card_name"],
+            "prevNum" => $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id") - $num
         ]);
     }
 

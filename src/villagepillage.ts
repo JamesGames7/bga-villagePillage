@@ -191,6 +191,16 @@ export class Game implements VillagePillageGame {
         await this.leftRightStocks[args.player_id].right.addCard(args.right, {fromElement: $(`overall_player_board_${args.player_id}`)});
     }
 
+    public async notif_gain(args: {player_id: number, num: number, prevNum: number}) {
+        for (let i = args.prevNum; i < args.num + args.prevNum; i++) {
+            $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
+            $(`turnip_stockpile_${args.player_id}_${i}`).style.top = Math.random() * 237 + "px";
+            $(`turnip_stockpile_${args.player_id}_${i}`).style.left = Math.random() * 140 + "px";
+
+            this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`))
+        }
+    }
+
 	public notif_test(args: any) {
 		console.log(args);
 	}

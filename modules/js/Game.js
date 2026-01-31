@@ -196,6 +196,14 @@ class Game {
         await this.leftRightStocks[args.player_id].left.addCard(args.left, { fromElement: $(`overall_player_board_${args.player_id}`) });
         await this.leftRightStocks[args.player_id].right.addCard(args.right, { fromElement: $(`overall_player_board_${args.player_id}`) });
     }
+    async notif_gain(args) {
+        for (let i = args.prevNum; i < args.num + args.prevNum; i++) {
+            $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
+            $(`turnip_stockpile_${args.player_id}_${i}`).style.top = Math.random() * 237 + "px";
+            $(`turnip_stockpile_${args.player_id}_${i}`).style.left = Math.random() * 140 + "px";
+            this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`));
+        }
+    }
     notif_test(args) {
         console.log(args);
     }
