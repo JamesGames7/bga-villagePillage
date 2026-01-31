@@ -230,6 +230,18 @@ export class Game implements VillagePillageGame {
         await new Promise(r => setTimeout(r, 500));
     }
 
+    public async notif_reset(args?: null) {
+        for (const player_id of this.gamedatas.playerorder) {
+            if (player_id == this.player_id) {
+                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards());
+                await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards());
+            } else {
+                await this.leftRightStocks[player_id].left.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
+                await this.leftRightStocks[player_id].right.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
+            }
+        }
+    }
+
 	public notif_test(args: any) {
 		console.log(args);
 	}

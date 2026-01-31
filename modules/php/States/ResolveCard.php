@@ -73,6 +73,8 @@ class ResolveCard extends GameState
         $this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
         $this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
 
+        $this->notify->all("reset", 'Start of next round');
+
         return "";
     }   
 
@@ -138,7 +140,8 @@ class ResolveCard extends GameState
     }
 
     private function exhaust(array $args): void {
-
+        $player_id = $args["player_id"];
+        $opponent_id = $args["opponent_id"];
     }
 
     private function buyRelic(array $args): void {

@@ -72,7 +72,8 @@ class Game extends \Bga\GameFramework\Table
             new Card("Toll Bridge", Types::Wall, 11),
             new Card("Outlaw", Types::Raider, 12),
             new Card("Veteran", Types::Raider, 13),
-            new Card("Mason", Types::Farmer, 14),
+            // TODO only wall effect done
+            new Card("Mason", Types::Farmer, 14, wallEffects: ["gain" => ["num" => 5], "exhaust" => []]),
             new Card("Treasury", Types::Wall, 15),
             new Card("Burglar", Types::Raider, 16),
             new Card("Trapper", Types::Raider, 17),
@@ -87,7 +88,7 @@ class Game extends \Bga\GameFramework\Table
             new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
             new Card("Merchant", Types::Merchant, 1),
             new Card("Wall", Types::Wall, 4, farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1], "bank" => ["num" => 1]]),
-            new Card("Raider", Types::Raider, 8),
+            new Card("Raider", Types::Raider, 8, farmEffects: ["steal" => ["num" => 4]], merchantEffects: ["steal" => ["num" => 4]]),
         ];
 
         $this->cards = $this->deckFactory->createDeck("card");

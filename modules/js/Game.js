@@ -227,6 +227,18 @@ class Game {
         }
         await new Promise(r => setTimeout(r, 500));
     }
+    async notif_reset(args) {
+        for (const player_id of this.gamedatas.playerorder) {
+            if (player_id == this.player_id) {
+                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards());
+                await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards());
+            }
+            else {
+                await this.leftRightStocks[player_id].left.removeAll({ slideTo: $(`overall_player_board_${player_id}`) });
+                await this.leftRightStocks[player_id].right.removeAll({ slideTo: $(`overall_player_board_${player_id}`) });
+            }
+        }
+    }
     notif_test(args) {
         console.log(args);
     }
