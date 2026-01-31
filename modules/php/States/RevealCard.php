@@ -20,8 +20,7 @@ class RevealCard extends GameState
             type: StateType::GAME,
 
             // optional
-            description: clienttranslate('${actplayer} must play a card or pass'),
-            descriptionMyTurn: clienttranslate('${you} must play a card or pass'),
+            description: clienttranslate('Revealing cards'),
             transitions: ["" => 20],
             updateGameProgression: false,
             initialPrivate: null,

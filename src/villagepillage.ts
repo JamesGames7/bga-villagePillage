@@ -51,8 +51,10 @@ export class Game implements VillagePillageGame {
                 </div>
             `)
             for (let i = 0; i < 5; i++) {
-                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_bank_${info.id}_${i}" class="turnip turnip_${i}"></div>`);
-                if (i >= parseInt(info.bank)) $(`turnip_bank_${info.id}_${i}`).classList.add("hidden");
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_wrap_${info.id}_${i}" class="turnip turnip_wrap_${i}"></div>`);
+            }
+            for (let i = 0; i < parseInt(info.bank); i++) {
+                $(`turnip_wrap_${info.id}_${i}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_bank_${info.id}_${i}" class="turnip"></div>`);
             }
             for (let i = 0; i < 3; i++) {
                 $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="relic_bank_${info.id}_${i}" class="relic relic_${i} hidden"></div>`);
@@ -196,6 +198,17 @@ export class Game implements VillagePillageGame {
             await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200})
         }
         await new Promise(r => setTimeout(r, 500))
+    }
+
+    public async notif_bank(args: {player_id: number, num: number, prevStock: number, prevBank: number}) {
+        for (let i = 0; i < args.num; i++) {
+            $(`turnip_stockpile_${args.player_id}_${args.prevStock - 1 - i}`).id = `turnip_bank_${args.player_id}_${i + args.prevBank}`;
+
+            console.log(i + args.prevBank);
+
+            await this.animationManager.slideAndAttach($(`turnip_bank_${args.player_id}_${i + args.prevBank}`), $(`turnip_wrap_${args.player_id}_${i + args.prevBank}`), {bump: 1, duration: 200})
+        }
+        await new Promise(r => setTimeout(r, 500));
     }
 
 	public notif_test(args: any) {

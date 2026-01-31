@@ -47,34 +47,39 @@
   background-size: 100% 100%;
 }
 
-.turnip_0 {
+.turnip_wrap_0 {
   position: absolute;
   top: 60px;
   left: 128px;
+  background: none !important;
 }
 
-.turnip_1 {
+.turnip_wrap_1 {
   position: absolute;
   top: 89.5px;
   left: 82px;
+  background: none !important;
 }
 
-.turnip_2 {
+.turnip_wrap_2 {
   position: absolute;
   top: 119px;
   left: 130px;
+  background: none !important;
 }
 
-.turnip_3 {
+.turnip_wrap_3 {
   position: absolute;
   top: 148.5px;
   left: 82px;
+  background: none !important;
 }
 
-.turnip_4 {
+.turnip_wrap_4 {
   position: absolute;
   top: 178px;
   left: 128px;
+  background: none !important;
 }
 
 .relic {
@@ -115,12 +120,16 @@
 }
 
 .stockpile {
-  width: 200px;
+  width: 180px;
   aspect-ratio: 482/719;
   display: flex;
   align-content: start;
   flex-direction: row;
   flex-wrap: wrap;
+  margin-left: 20px;
+}
+.stockpile .turnip {
+  margin-left: -20px;
 }
 
 .hidden {

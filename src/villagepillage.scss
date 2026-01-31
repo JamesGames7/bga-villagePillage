@@ -56,10 +56,11 @@
 $left_pos: (128px, 82px, 130px, 82px, 128px);
 
 @for $i from 0 through 4 {
-    .turnip_#{$i} {
+    .turnip_wrap_#{$i} {
         position: absolute;
         top: calc($i * 29.5px + 60px);
         left: list.nth($left_pos, $i + 1);
+        background: none !important;
     }
 }
 
@@ -98,12 +99,17 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
 }
 
 .stockpile {
-    width: 200px;
+    width: 180px;
     aspect-ratio: 482 / 719;
     display: flex;
     align-content: start;
     flex-direction: row;
     flex-wrap: wrap;
+    margin-left: 20px;
+
+    .turnip {
+        margin-left: -20px;
+    }
 }
 
 .hidden {
