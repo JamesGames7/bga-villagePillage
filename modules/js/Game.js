@@ -189,6 +189,10 @@ class Game {
         await this.handStock.addCards(this.leftRightStocks[this.player_id].right.getCards());
         this.handStock.setSelectionMode("single");
     }
+    async notif_reveal(args) {
+        await this.leftRightStocks[args.player_id].left.addCard(args.left, { fromElement: $(`overall_player_board_${args.player_id}`) });
+        await this.leftRightStocks[args.player_id].right.addCard(args.right, { fromElement: $(`overall_player_board_${args.player_id}`) });
+    }
     notif_test(args) {
         console.log(args);
     }

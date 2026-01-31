@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Bga\Games\VillagePillageJames\States;
+
+use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\VillagePillageJames\Game;
+
+// TODO: Correct values
+class RevealCard extends GameState
+{
+    function __construct(
+        protected Game $game,
+    ) {
+        parent::__construct($game,
+            id: 19,
+            type: StateType::GAME,
+
+            // optional
+            description: clienttranslate('${actplayer} must play a card or pass'),
+            descriptionMyTurn: clienttranslate('${you} must play a card or pass'),
+            transitions: ["" => 20],
+            updateGameProgression: false,
+            initialPrivate: null,
+        );
+    }
+
+    public function getArgs(): array
+    {
+        // the data sent to the front when entering the state
+        return [];
+    } 
+
+    function onEnteringState() {
+        // the code to run when entering the state
+        foreach ($this->game->loadPlayersBasicInfos() as $id => $data) {
+            $left = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("left", $id))[0]["type_arg"]))[0]->getInfo($id);
+            $right = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("right", $id))[0]["type_arg"]))[0]->getInfo($id);
+
+            $this->notify->all("reveal", '${player_name} played ${card_1} and ${card_2}', [
+                "left" => $left,
+                "right" => $right,
+                "player_name" => $data["player_name"],
+                "player_id" => $id,
+                "card_1" => $left["name"],
+                "card_2" => $right["name"]
+            ]);
+        }
+        return "";
+    } 
+}

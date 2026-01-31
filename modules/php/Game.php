@@ -176,8 +176,6 @@ class Game extends \Bga\GameFramework\Table
 
         $result["shop"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->cards->getCardsInLocation("shop")));
 
-        $result["test"] = $this->START_CARDS[0]->farmEffect($currentPlayerId, 0);
-
         return $result;
     }
 

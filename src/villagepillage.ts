@@ -185,6 +185,11 @@ export class Game implements VillagePillageGame {
         this.handStock.setSelectionMode("single");
     }
 
+    public async notif_reveal(args: {player_id: number, left: Card, right: Card}) {
+        await this.leftRightStocks[args.player_id].left.addCard(args.left, {fromElement: $(`overall_player_board_${args.player_id}`)});
+        await this.leftRightStocks[args.player_id].right.addCard(args.right, {fromElement: $(`overall_player_board_${args.player_id}`)});
+    }
+
 	public notif_test(args: any) {
 		console.log(args);
 	}
