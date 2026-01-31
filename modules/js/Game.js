@@ -62,7 +62,11 @@ class Game {
             let info = gamedatas.players[id];
             $('game_play_area').insertAdjacentHTML("beforeend", /*html*/ `
                 <div id="player_area_${info.id}" class="player_area whiteblock">
-                    <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}</div>
+                    <div class="player_names">
+                        <div id="opponent_name_${info.id}_0" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) - 1 + gamedatas.playerorder.length) % gamedatas.playerorder.length]).toString()))}</div>
+                        <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}</div>
+                        <div id="opponent_name_${info.id}_1" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) + 1) % gamedatas.playerorder.length]).toString()))}</div>
+                    </div>
                     <div id="player_contents_${info.id}" class="player_contents">
                         <div id="bank_${info.id}" class="bank"></div>
                         <div id="stockpile_${info.id}" class="stockpile"></div>
@@ -140,7 +144,6 @@ class Game {
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction });
         this.shopStock.addCards(gamedatas.shop);
-        console.log(gamedatas.test);
     }
     sortFunction(a, b) {
         let order = [Types.Farmer, Types.Wall, Types.Raider, Types.Merchant];

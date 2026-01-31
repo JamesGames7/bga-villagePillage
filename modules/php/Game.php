@@ -84,7 +84,7 @@ class Game extends \Bga\GameFramework\Table
             new Card("Rat Catcher", Types::Farmer, 23),
         ];  
         $this->START_CARDS = [
-            new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]]),
+            new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
             new Card("Merchant", Types::Merchant, 1),
             new Card("Wall", Types::Wall, 4),
             new Card("Raider", Types::Raider, 8),

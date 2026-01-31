@@ -8,10 +8,18 @@ use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\VillagePillageJames\Game;
+use Types;
 
 // TODO: Correct values
 class ResolveCard extends GameState
 {
+    private $typeToEffect = [
+        Types::Farmer->value => "farmEffect",
+        Types::Wall->value => "wallEffect",
+        Types::Raider->value => "raidEffect",
+        Types::Merchant->value => "merchantEffect"
+    ];
+
     function __construct(
         protected Game $game,
     ) {
@@ -20,8 +28,7 @@ class ResolveCard extends GameState
             type: StateType::GAME,
 
             // optional
-            description: clienttranslate('${actplayer} must play a card or pass'),
-            descriptionMyTurn: clienttranslate('${you} must play a card or pass'),
+            description: clienttranslate('Resolving effects of cards'),
             transitions: ["" => 10],
             updateGameProgression: false,
             initialPrivate: null,
@@ -34,13 +41,34 @@ class ResolveCard extends GameState
         return [];
     } 
 
-    function onEnteringState(int $activePlayerId) {
+    function onEnteringState() {
         // the code to run when entering the state
         $allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
+        $cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
+        $card_info = array_map(fn($card) => array_values(array_filter($allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($cards));
 
-        foreach ($this->game->START_CARDS[0]->farmEffect($activePlayerId, 0) as $function => $args) {
-            $this->$function($args);
+        // TODO repeat 4 times (farm, etc). Record # of turnips in bank / SP per player before for stealing stuff
+        $i = 0;
+        foreach ($card_info as $card) {
+            $card_deck = $cards[$i];
+            if ($card->getType() == Types::Farmer) {
+                $player_id = $card_deck["location_arg"];
+                $opponent_id = $card_deck["location"] == "left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
+                $opp_card_deck = array_values($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id))[0];
+                $opp_card = array_values(array_filter($allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
+                    
+                $card_effect = $this->typeToEffect[$opp_card->getType()->value];
+
+                $effect = $card->$card_effect(intval($cards[$i]["location_arg"]), $opponent_id);
+                
+                foreach ($effect as $function => $args) {
+                    $this->$function($args);
+                }
+            }
+            $i++;
         }
+
+        
 
         return "";
     }   
