@@ -27,6 +27,18 @@
     align-items: center;
 }
 
+.player_names {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.opponent_name {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+}
+
 .player_area_name {
     width: 400px;
     display: flex;
