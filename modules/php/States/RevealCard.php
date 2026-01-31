@@ -9,7 +9,6 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\VillagePillageJames\Game;
 
-// TODO: Correct values
 class RevealCard extends GameState
 {
     function __construct(

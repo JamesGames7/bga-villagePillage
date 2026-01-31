@@ -86,7 +86,7 @@ class Game extends \Bga\GameFramework\Table
         $this->START_CARDS = [
             new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
             new Card("Merchant", Types::Merchant, 1),
-            new Card("Wall", Types::Wall, 4, farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]]),
+            new Card("Wall", Types::Wall, 4, farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1], "bank" => ["num" => 1]]),
             new Card("Raider", Types::Raider, 8),
         ];
 

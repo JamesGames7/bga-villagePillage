@@ -196,17 +196,34 @@ class Game {
         await this.leftRightStocks[args.player_id].right.addCard(args.right, { fromElement: $(`overall_player_board_${args.player_id}`) });
     }
     async notif_gain(args) {
-        for (let i = args.prevNum; i < args.num + args.prevNum; i++) {
+        let prevStock = $(`stockpile_${args.player_id}`).children.length;
+        for (let i = prevStock; i < args.num + prevStock; i++) {
             $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
             await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
         }
         await new Promise(r => setTimeout(r, 500));
     }
     async notif_bank(args) {
+        let prevStock = $(`stockpile_${args.player_id}`).children.length;
+        let prevBank = 0;
+        for (let i = 0; i < 5; i++) {
+            if ($(`bank_${args.player_id}`).children[i].children.length > 0)
+                prevBank++;
+        }
         for (let i = 0; i < args.num; i++) {
-            $(`turnip_stockpile_${args.player_id}_${args.prevStock - 1 - i}`).id = `turnip_bank_${args.player_id}_${i + args.prevBank}`;
-            console.log(i + args.prevBank);
-            await this.animationManager.slideAndAttach($(`turnip_bank_${args.player_id}_${i + args.prevBank}`), $(`turnip_wrap_${args.player_id}_${i + args.prevBank}`), { bump: 1, duration: 200 });
+            $(`turnip_stockpile_${args.player_id}_${prevStock - 1 - i}`).id = `turnip_bank_${args.player_id}_${i + prevBank}`;
+            await this.animationManager.slideAndAttach($(`turnip_bank_${args.player_id}_${i + prevBank}`), $(`turnip_wrap_${args.player_id}_${i + prevBank}`), { bump: 1, duration: 200 });
+        }
+        await new Promise(r => setTimeout(r, 500));
+    }
+    async notif_steal(args) {
+        let player_id = args.player_id1;
+        let opponent_id = args.player_id2;
+        let playerStock = $(`stockpile_${player_id}`).children.length;
+        let opponentStock = $(`stockpile_${opponent_id}`).children.length;
+        for (let i = 0; i < args.num; i++) {
+            $(`turnip_stockpile_${opponent_id}_${opponentStock - 1 - i}`).id = `turnip_stockpile_${player_id}_${i + playerStock}`;
+            await this.animationManager.slideAndAttach($(`turnip_stockpile_${player_id}_${i + playerStock}`), $(`stockpile_${player_id}`), { bump: 1, duration: 200 });
         }
         await new Promise(r => setTimeout(r, 500));
     }

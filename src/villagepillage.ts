@@ -191,22 +191,41 @@ export class Game implements VillagePillageGame {
         await this.leftRightStocks[args.player_id].right.addCard(args.right, {fromElement: $(`overall_player_board_${args.player_id}`)});
     }
 
-    public async notif_gain(args: {player_id: number, num: number, prevNum: number}) {
-        for (let i = args.prevNum; i < args.num + args.prevNum; i++) {
+    public async notif_gain(args: {player_id: number, num: number}) {
+        let prevStock: number = $(`stockpile_${args.player_id}`).children.length;
+        for (let i = prevStock; i < args.num + prevStock; i++) {
             $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
-
+            
             await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200})
         }
         await new Promise(r => setTimeout(r, 500))
     }
 
-    public async notif_bank(args: {player_id: number, num: number, prevStock: number, prevBank: number}) {
+    public async notif_bank(args: {player_id: number, num: number}) {
+        let prevStock: number = $(`stockpile_${args.player_id}`).children.length;
+        let prevBank: number = 0;
+        for (let i = 0; i < 5; i++) {
+            if ($(`bank_${args.player_id}`).children[i].children.length > 0) prevBank++;
+        }
         for (let i = 0; i < args.num; i++) {
-            $(`turnip_stockpile_${args.player_id}_${args.prevStock - 1 - i}`).id = `turnip_bank_${args.player_id}_${i + args.prevBank}`;
+            $(`turnip_stockpile_${args.player_id}_${prevStock - 1 - i}`).id = `turnip_bank_${args.player_id}_${i + prevBank}`;
 
-            console.log(i + args.prevBank);
+            await this.animationManager.slideAndAttach($(`turnip_bank_${args.player_id}_${i + prevBank}`), $(`turnip_wrap_${args.player_id}_${i + prevBank}`), {bump: 1, duration: 200})
+        }
+        await new Promise(r => setTimeout(r, 500));
+    }
 
-            await this.animationManager.slideAndAttach($(`turnip_bank_${args.player_id}_${i + args.prevBank}`), $(`turnip_wrap_${args.player_id}_${i + args.prevBank}`), {bump: 1, duration: 200})
+    public async notif_steal(args: {player_id1: number, player_id2: number, num: number}) {
+        let player_id = args.player_id1;
+        let opponent_id = args.player_id2;
+        
+        let playerStock: number = $(`stockpile_${player_id}`).children.length;
+        let opponentStock: number = $(`stockpile_${opponent_id}`).children.length;
+
+        for (let i = 0; i < args.num; i++) {
+            $(`turnip_stockpile_${opponent_id}_${opponentStock - 1 - i}`).id = `turnip_stockpile_${player_id}_${i + playerStock}`;
+
+            await this.animationManager.slideAndAttach($(`turnip_stockpile_${player_id}_${i + playerStock}`), $(`stockpile_${player_id}`), {bump: 1, duration: 200});
         }
         await new Promise(r => setTimeout(r, 500));
     }
