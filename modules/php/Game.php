@@ -84,7 +84,7 @@ class Game extends \Bga\GameFramework\Table
             new Card("Rat Catcher", Types::Farmer, 23),
         ];  
         $this->START_CARDS = [
-            new Card("Farmer", Types::Farmer, 0),
+            new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]]),
             new Card("Merchant", Types::Merchant, 1),
             new Card("Wall", Types::Wall, 4),
             new Card("Raider", Types::Raider, 8),
@@ -162,7 +162,7 @@ class Game extends \Bga\GameFramework\Table
         foreach ($this->loadPlayersBasicInfos() as $id => $info) {
             $leftCard = null;
             $rightCard = null;
-            // FIXME not hiding other people's
+
             if (($id == $currentPlayerId || $this->gamestate->getCurrentMainStateId() != 10) && count($this->cards->getCardsInLocation("left", $id)) > 0) {
                 $leftCard = array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($card) => array_values($this->cards->getCardsInLocation("left", $id))[0]["type_arg"] == $card->getId()))[0]->getInfo($id);
                 $rightCard = array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($card) => array_values($this->cards->getCardsInLocation("right", $id))[0]["type_arg"] == $card->getId()))[0]->getInfo($id);
@@ -171,10 +171,12 @@ class Game extends \Bga\GameFramework\Table
             $result["players"][$id]["left"] = $leftCard;
             $result["players"][$id]["right"] = $rightCard;
         }
-        
+
         $result["hand"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->cards->getCardsInLocation("hand", $currentPlayerId)));
 
         $result["shop"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->cards->getCardsInLocation("shop")));
+
+        $result["test"] = $this->START_CARDS[0]->farmEffect($currentPlayerId, 0);
 
         return $result;
     }

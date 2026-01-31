@@ -140,6 +140,7 @@ class Game {
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction });
         this.shopStock.addCards(gamedatas.shop);
+        console.log(gamedatas.test);
     }
     sortFunction(a, b) {
         let order = [Types.Farmer, Types.Wall, Types.Raider, Types.Merchant];

@@ -126,6 +126,8 @@ export class Game implements VillagePillageGame {
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), {sort: this.sortFunction});
         this.shopStock.addCards(gamedatas.shop);
+
+        console.log(gamedatas.test);
     } 
 
     private sortFunction(a: Card, b: Card): number {

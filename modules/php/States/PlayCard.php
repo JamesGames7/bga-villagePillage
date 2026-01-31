@@ -23,7 +23,7 @@ class PlayCard extends GameState
             // optional
             description: clienttranslate('Players are choosing which cards to play'),
             descriptionMyTurn: clienttranslate('${you} must choose which cards to play'),
-            transitions: [],
+            transitions: ["" => 20],
             updateGameProgression: false,
             initialPrivate: null,
         );
