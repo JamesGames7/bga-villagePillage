@@ -48,8 +48,8 @@ class Card {
         return ["name" => $this->name, "type" => $this->type, "id" => $this->id, "player_id" => strval($player_id)];
     }
 
-    public function farmEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank) {
-        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank];
+    public function farmEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank, int $id, string $op_card_name, string $side) {
+        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank, "op_card_id" => $id, "op_card_name" => $op_card_name, "side" => $side];
         $res = [];
         foreach ($this->farmEffects as $function => $passArgs) {
             $res[$function] = array_merge($args, $passArgs);
@@ -57,8 +57,8 @@ class Card {
         return $res;
     }
 
-    public function wallEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank) {
-        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank];
+    public function wallEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank, int $id, string $op_card_name, string $side) {
+        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank, "op_card_id" => $id, "op_card_name" => $op_card_name, "side" => $side];
         $res = [];
         foreach ($this->wallEffects as $function => $passArgs) {
             $res[$function] = array_merge($args, $passArgs);
@@ -66,8 +66,8 @@ class Card {
         return $res;
     }
 
-    public function raidEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank) {
-        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank];
+    public function raidEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank, int $id, string $op_card_name, string $side) {
+        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank, "op_card_id" => $id, "op_card_name" => $op_card_name, "side" => $side];
         $res = [];
         foreach ($this->raidEffects as $function => $passArgs) {
             $res[$function] = array_merge($args, $passArgs);
@@ -75,8 +75,8 @@ class Card {
         return $res;
     }
 
-    public function merchantEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank) {
-        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank];
+    public function merchantEffect(int $player_id, int $opponent_id, int $opponent_stock, int $opponent_bank, int $id, string $op_card_name, string $side) {
+        $args = ["player_id" => $player_id, "opponent_id" => $opponent_id, "card_name" => $this->getName(), "opponent_stock" => $opponent_stock, "opponent_bank" => $opponent_bank, "op_card_id" => $id, "op_card_name" => $op_card_name, "side" => $side];
         $res = [];
         foreach ($this->merchantEffects as $function => $passArgs) {
             $res[$function] = array_merge($args, $passArgs);

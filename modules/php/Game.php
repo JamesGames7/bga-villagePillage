@@ -72,15 +72,15 @@ class Game extends \Bga\GameFramework\Table
             new Card("Toll Bridge", Types::Wall, 11),
             new Card("Outlaw", Types::Raider, 12),
             new Card("Veteran", Types::Raider, 13),
-            // TODO only wall effect done
-            new Card("Mason", Types::Farmer, 14, wallEffects: ["gain" => ["num" => 5], "exhaust" => []]),
+            new Card("Mason", Types::Farmer, 14),
             new Card("Treasury", Types::Wall, 15),
             new Card("Burglar", Types::Raider, 16),
             new Card("Trapper", Types::Raider, 17),
             new Card("Innkeeper", Types::Farmer, 18),
             new Card("Labyrinth", Types::Wall, 19),
             new Card("Pickler", Types::Farmer, 20),
-            new Card("Miner", Types::Farmer, 21),
+            // TODO only wall effect done
+            new Card("Miner", Types::Farmer, 21, wallEffects: ["gain" => ["num" => 5], "exhaust" => []]),
             new Card("Cathedral", Types::Wall, 22),
             new Card("Rat Catcher", Types::Farmer, 23),
         ];  
@@ -159,10 +159,10 @@ class Game extends \Bga\GameFramework\Table
         $result["players"] = $this->getCollectionFromDb(
             "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank` FROM `player`"
         );
-
         foreach ($this->loadPlayersBasicInfos() as $id => $info) {
             $leftCard = null;
             $rightCard = null;
+            $exhaustedCards = $this->cards->getCardsInLocation("exhausted", $id);
 
             if (($id == $currentPlayerId || $this->gamestate->getCurrentMainStateId() != 10) && count($this->cards->getCardsInLocation("left", $id)) > 0) {
                 $leftCard = array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($card) => array_values($this->cards->getCardsInLocation("left", $id))[0]["type_arg"] == $card->getId()))[0]->getInfo($id);
@@ -171,6 +171,7 @@ class Game extends \Bga\GameFramework\Table
 
             $result["players"][$id]["left"] = $leftCard;
             $result["players"][$id]["right"] = $rightCard;
+            $result["players"][$id]["exhausted"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($a) => $a->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $exhaustedCards));
         }
 
         $result["hand"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->cards->getCardsInLocation("hand", $currentPlayerId)));
@@ -238,8 +239,6 @@ class Game extends \Bga\GameFramework\Table
         // Dummy content.
         // $this->tableStats->init('table_teststat1', 0);
         // $this->playerStats->init('player_teststat1', 0);
-
-        // TODO: Setup the initial game situation here.
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();

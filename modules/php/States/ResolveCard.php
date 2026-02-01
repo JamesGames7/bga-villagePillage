@@ -55,12 +55,12 @@ class ResolveCard extends GameState
                 if ($card->getType() == $type) {
                     $player_id = $card_deck["location_arg"];
                     $opponent_id = $card_deck["location"] == "left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
-                    $opp_card_deck = array_values($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id))[0];
+                    $opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . $card_deck["location"] == "left" ? "right" : "left", $opponent_id)))[0];
                     $opp_card = array_values(array_filter($allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
-                        
+                    
                     $card_effect = $this->typeToEffect[$opp_card->getType()->value];
 
-                    $effect = $card->$card_effect(intval($cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]));
+                    $effect = $card->$card_effect(intval($cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
                     
                     foreach ($effect as $function => $args) {
                         $this->$function($args);
@@ -72,8 +72,14 @@ class ResolveCard extends GameState
 
         $this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
         $this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
+        $this->game->cards->moveAllCardsInLocationKeepOrder("exhausted", "hand");
 
-        $this->notify->all("reset", 'Start of next round');
+        $this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_left", "exhausted");
+        $this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_right", "exhausted");
+
+        $this->notify->all("reset", 'Start of next round', [
+			array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->game->cards->getCardsInLocation("exhausted")))
+		]);
 
         return "";
     }   
@@ -125,6 +131,7 @@ class ResolveCard extends GameState
 
         $realNum = min($num, $opponent_stock);
 
+		// FIXME error with 2 raiders and not enough
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` - $realNum WHERE `player_id` = $opponent_id");
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` + $realNum WHERE `player_id` = $player_id");
 
@@ -142,6 +149,20 @@ class ResolveCard extends GameState
     private function exhaust(array $args): void {
         $player_id = $args["player_id"];
         $opponent_id = $args["opponent_id"];
+		$exhausted_card_id = $args["op_card_id"];
+		$exhausted_card_name = $args["op_card_name"];
+		$side = $args["side"];
+
+		$this->game->cards->moveCard($exhausted_card_id, "exhausted_" . $side, $opponent_id);
+
+		$this->notify->all("exhaust", '${player_name1} exhausts ${player_name2}\'s ${op_card} using ${card_name}', [
+			"player_id1" => $player_id,
+			"player_name1" => $this->game->getPlayerNameById($player_id),
+			"player_id2" => $opponent_id,
+			"player_name2" => $this->game->getPlayerNameById($opponent_id),
+			"card_name" => $args["card_name"],
+			"op_card" => $exhausted_card_name
+		]);
     }
 
     private function buyRelic(array $args): void {

@@ -43,6 +43,7 @@
     width: 400px;
     display: flex;
     justify-content: center;
+    position: relative;
 }
 
 .turnip {
@@ -137,4 +138,11 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
     &:hover {
         outline-color: red;
     }
+}
+
+.exhausted {
+    transform: rotate(90deg);
+    top: calc(100% + 10px);
+    z-index: -1;
+    width: 200px !important;
 }

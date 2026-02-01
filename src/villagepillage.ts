@@ -15,6 +15,10 @@ export class Game implements VillagePillageGame {
     public handStock: InstanceType<typeof BgaCards.HandStock<Card>>;
     public leftRightStocks: {[key: number]: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>}} = {};
 
+    public exhaustedStocks: {[key: number]: InstanceType<typeof BgaCards.AllVisibleDeck<Card>>} = {};
+
+    public voidStock: InstanceType<typeof BgaCards.VoidStock<Card>>;
+
     public shopStock: InstanceType<typeof BgaCards.LineStock<Card>>;
 
     private player_id: number;
@@ -41,7 +45,9 @@ export class Game implements VillagePillageGame {
                 <div id="player_area_${info.id}" class="player_area whiteblock">
                     <div class="player_names">
                         <div id="opponent_name_${info.id}_0" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) - 1 + gamedatas.playerorder.length) % gamedatas.playerorder.length]).toString()))}</div>
-                        <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}</div>
+                        <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}
+                            <div id="exhausted_${info.id}" class="exhausted"></div>
+                        </div>
                         <div id="opponent_name_${info.id}_1" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) + 1) % gamedatas.playerorder.length]).toString()))}</div>
                     </div>
                     <div id="player_contents_${info.id}" class="player_contents">
@@ -84,6 +90,11 @@ export class Game implements VillagePillageGame {
                 this.leftRightStocks[info.id].left.addCard(info.left);
                 this.leftRightStocks[info.id].right.addCard(info.right);
             }
+
+            this.exhaustedStocks[info.id] = new BgaCards.AllVisibleDeck(this.cardManager, $(`exhausted_${info.id}`), {horizontalShift: '0'});
+            this.exhaustedStocks[info.id].addCards(info.exhausted);
+
+            this.voidStock = new BgaCards.VoidStock(this.cardManager, $(`overall_player_board_${this.player_id}`));
         })
 
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
@@ -230,16 +241,25 @@ export class Game implements VillagePillageGame {
         await new Promise(r => setTimeout(r, 500));
     }
 
-    public async notif_reset(args?: null) {
-        for (const player_id of this.gamedatas.playerorder) {
-            if (player_id == this.player_id) {
-                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards());
-                await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards());
+    public async notif_reset(args: Card[][]) {
+        for (let player_id of this.gamedatas.playerorder) {
+            player_id = player_id.toString();
+            if (player_id == this.player_id.toString()) {
+                await this.handStock.addCards(this.exhaustedStocks[player_id].getCards());
+            } else {
+                await this.voidStock.addCards(this.exhaustedStocks[player_id].getCards())
+            }
+            let curArgs: Card[] = args[0].filter(arg => arg.player_id == player_id);
+            await this.exhaustedStocks[player_id].addCards(curArgs);
+            if (player_id == this.player_id.toString()) {
+                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
+                await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
             } else {
                 await this.leftRightStocks[player_id].left.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
                 await this.leftRightStocks[player_id].right.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
             }
         }
+        this.handStock.setSelectionMode("single");
     }
 
 	public notif_test(args: any) {

@@ -6,13 +6,13 @@ export interface VillagePillagePlayer extends Player {
     stockpile: string;
     left: Card | null;
     right: Card | null;
+    exhausted: Card[];
 }
 
 export interface VillagePillageGamedatas extends Gamedatas<VillagePillagePlayer> {
     // Add here variables you set up in getAllDatas
     hand: Card[];
     shop: Card[];
-    test: any;
 }
 
 export interface VillagePillageGame {
