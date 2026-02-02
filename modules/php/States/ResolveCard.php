@@ -162,6 +162,14 @@ class ResolveCard extends GameState
         // TODO pass boolean that checks for if can steal from banked
         $opponent_bank = $args["opponent_bank"];
 
+		if (array_key_exists("swap", $args) && $args["swap"]) {
+			$temp = $player_id;
+			$player_id = $opponent_id;
+			$opponent_id = $temp;
+
+			$opponent_stock = $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id");
+		}
+
         $realNum = min($num, $opponent_stock);
 
 		// FIXME error with 2 raiders and not enough

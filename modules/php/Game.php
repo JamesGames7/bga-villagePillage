@@ -62,8 +62,7 @@ class Game extends \Bga\GameFramework\Table
         });*/
 
         $this->CARDS =  [
-            // TODO opponent steals
-            new Card("Cutpurse", Types::Raider, 2),
+            new Card("Cutpurse", Types::Raider, 2, farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]], raidEffects: ["steal" => ["num" => 1, "swap" => true]]),
             // TODO multiple effects on unable
             new Card("Doctor", Types::Merchant, 3),
             new Card("Dungeon", Types::Wall, 5, wallEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
@@ -71,10 +70,8 @@ class Game extends \Bga\GameFramework\Table
             new Card("Bard", Types::Merchant, 6),
             // TODO opponent gains
             new Card("Moat", Types::Wall, 7),
-            // TODO opponent steals
-            new Card("Berserker", Types::Raider, 9),
-            // TODO opponent steals
-            new Card("Florist", Types::Farmer, 10),
+            new Card("Berserker", Types::Raider, 9, wallEffects: ["steal" => ["num" => 1, "swap" => true]], farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]]),
+            new Card("Florist", Types::Farmer, 10, raidEffects: ["gain" => ["num" => 5], ["steal" => ["num" => 2, "swap" => true]]], farmEffects: ["gain" => ["num" => 5]], wallEffects: ["gain" => ["num" => 5]], merchantEffects: ["gain" => ["num" => 5]]),
             // TODO steal from bank
             new Card("Toll Bridge", Types::Wall, 11),
             new Card("Outlaw", Types::Raider, 12, farmEffects: ["steal" => ["num" => 5]], merchantEffects: ["steal" => ["num" => 4], "buyCard" => ["num" => 0]]),
@@ -164,6 +161,10 @@ class Game extends \Bga\GameFramework\Table
 
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
+
+        // REVIEW remove when done
+        // $this->cards->moveCard(20, "hand", $currentPlayerId);
+
         $result["players"] = $this->getCollectionFromDb(
             "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank`, `relics` FROM `player`"
         );
