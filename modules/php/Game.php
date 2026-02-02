@@ -62,26 +62,35 @@ class Game extends \Bga\GameFramework\Table
         });*/
 
         $this->CARDS =  [
+            // TODO opponent steals
             new Card("Cutpurse", Types::Raider, 2),
+            // TODO multiple effects on unable
             new Card("Doctor", Types::Merchant, 3),
-            new Card("Dungeon", Types::Wall, 5),
+            new Card("Dungeon", Types::Wall, 5, wallEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
+            // TODO draw card from deck
             new Card("Bard", Types::Merchant, 6),
+            // TODO opponent gains
             new Card("Moat", Types::Wall, 7),
+            // TODO opponent steals
             new Card("Berserker", Types::Raider, 9),
+            // TODO opponent steals
             new Card("Florist", Types::Farmer, 10),
+            // TODO steal from bank
             new Card("Toll Bridge", Types::Wall, 11),
-            new Card("Outlaw", Types::Raider, 12),
+            new Card("Outlaw", Types::Raider, 12, farmEffects: ["steal" => ["num" => 5]], merchantEffects: ["steal" => ["num" => 4], "buyCard" => ["num" => 0]]),
+            // TODO exhaust self
             new Card("Veteran", Types::Raider, 13),
-            new Card("Mason", Types::Farmer, 14),
-            new Card("Treasury", Types::Wall, 15),
+            new Card("Mason", Types::Farmer, 14, wallEffects: ["gain" => ["num" => 4], "steal" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
+            new Card("Treasury", Types::Wall, 15, raidEffects: ["steal" => ["num" => 2], "bank" => ["num" => 4]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]]),
+            // TODO steal from bank
             new Card("Burglar", Types::Raider, 16),
-            new Card("Trapper", Types::Raider, 17),
-            new Card("Innkeeper", Types::Farmer, 18),
-            new Card("Labyrinth", Types::Wall, 19),
-            new Card("Pickler", Types::Farmer, 20),
-            new Card("Miner", Types::Farmer, 21),
-            new Card("Cathedral", Types::Wall, 22),
-            new Card("Rat Catcher", Types::Farmer, 23),
+            new Card("Trapper", Types::Raider, 17, farmEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], merchantEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1]]),
+            new Card("Innkeeper", Types::Farmer, 18, merchantEffects: ["gain" => ["num" => 5], "buyCard" => ["num" => 0]], farmEffects: ["gain" => ["num" => 4]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]]),
+            new Card("Labyrinth", Types::Wall, 19, raidEffects: ["steal" => ["num" => 3], "exhaust" => []], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
+            new Card("Pickler", Types::Farmer, 20, raidEffects: ["gain" => ["num" => 4]], farmEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]]),
+            new Card("Miner", Types::Farmer, 21, wallEffects: ["gain" => ["num" => 5], "exhaust" => []], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
+            new Card("Cathedral", Types::Wall, 22, raidEffects: ["steal" => ["num" => 3], "bank" => ["num" => 1]], farmEffects: ["buyCard" => ["num" => 1]], wallEffects: ["buyCard" => ["num" => 1]], merchantEffects: ["buyCard" => ["num" => 1]]),
+            new Card("Rat Catcher", Types::Farmer, 23, farmEffects: ["gain" => ["num" => 6]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
         ];  
         $this->START_CARDS = [
             new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
