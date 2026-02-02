@@ -121,6 +121,10 @@ class ResolveCard extends GameState
         $player_id = $args["player_id"];
         $num = $args["num"];
 
+		if (array_key_exists("swap", $args) && $args["swap"]) {
+			$player_id = $args["opponent_id"];
+		}
+
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` + $num WHERE `player_id` = $player_id");
 
         $this->notify->all("gain", '${player_name} gains ${num} turnip${plural} using ${card_name}', [
