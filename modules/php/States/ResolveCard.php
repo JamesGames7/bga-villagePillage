@@ -19,6 +19,11 @@ class ResolveCard extends GameState
         Types::Raider->value => "raidEffect",
         Types::Merchant->value => "merchantEffect"
     ];
+	private $allCards;
+	private $cards;
+	private $card_info;
+	private $stopped_card;
+	private bool $run_effect = true;
 
     function __construct(
         protected Game $game,
@@ -43,29 +48,37 @@ class ResolveCard extends GameState
 
     function onEnteringState() {
         // the code to run when entering the state
-        $allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
-        $cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
-        $card_info = array_map(fn($card) => array_values(array_filter($allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($cards));
 
-        foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
+		$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
+		$this->cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
+		$this->card_info = array_map(fn($card) => array_values(array_filter($this->allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($this->cards));
+
+        if ($this->doEffects() == "done") return "";
+    }   
+
+	private function doEffects(int $card_id = -1) {
+		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
             $i = 0;
             $opp_nums = $this->game->getCollectionFromDB("SELECT `player_id`, `stockpile`, `bank` FROM `player`");
-            foreach ($card_info as $card) {
-                $card_deck = $cards[$i];
+            foreach ($this->card_info as $card) {
+                $card_deck = $this->cards[$i];
                 if ($card->getType() == $type) {
                     $player_id = $card_deck["location_arg"];
                     $opponent_id = $card_deck["location"] == "left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
                     $opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . $card_deck["location"] == "left" ? "right" : "left", $opponent_id)))[0];
-                    $opp_card = array_values(array_filter($allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
+                    $opp_card = array_values(array_filter($this->allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
                     
                     $card_effect = $this->typeToEffect[$opp_card->getType()->value];
 
-                    $effect = $card->$card_effect(intval($cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
+                    $effect = $card->$card_effect(intval($this->cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
                     
                     foreach ($effect as $function => $args) {
                         $this->$function($args);
                     }
                 }
+				if ($card_id == $card->getId()) {
+					$this->run_effect = true;
+				}
                 $i++;
             }
         }
@@ -81,8 +94,8 @@ class ResolveCard extends GameState
 			array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->game->cards->getCardsInLocation("exhausted")))
 		]);
 
-        return "";
-    }   
+		return "done";
+	}
 
     private function gain(array $args): void {
         $player_id = $args["player_id"];
@@ -166,8 +179,46 @@ class ResolveCard extends GameState
     }
 
     private function buyRelic(array $args): void {
+		$player_id = $args["player_id"];
+		$relics = intval($this->game->getUniqueValueFromDB("SELECT `relics` FROM `player` WHERE `player_id` = $player_id"));
+		$bank = intval($this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $player_id"));
+		$stockpile = intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id"));
 
-    }
+		switch ($relics) {
+			case 0:
+				$cost = 8;
+				$relics = "first";
+				break;
+			case 1:
+				$cost = 9;
+				$relics = "second";
+				break;
+			case 2:
+				$cost = 10;
+				$relics = "third";
+				break;
+			default:
+				throw new \BgaUserException("Error, please submit a bug report titled 'buy relic error'");
+		}
+
+		if ($bank + $stockpile >= $cost) {
+			$stockpileSubtract = min($stockpile, $cost);
+			$cost -= $stockpileSubtract;
+
+			$this->game->DbQuery("UPDATE `player` SET `relics` = `relics` + 1, `stockpile` = `stockpile` - $stockpileSubtract, `bank` = `bank` - $cost WHERE `player_id` = $player_id");
+
+			$this->notify->all("relic", '${player_name} bought their ${num} relic using ${card_name}', [
+				"player_name" => $this->game->getPlayerNameById($player_id),
+				"player_id" => $player_id,
+				"num" => $relics,
+				"card_name" => $args["card_name"],
+				"stock_spent" => $stockpileSubtract,
+				"bank_spent" => $cost
+			]);
+		}
+		// TODO other action
+		// TODO end game if necessary
+	}
 
     private function buyCard(array $args): void {
 

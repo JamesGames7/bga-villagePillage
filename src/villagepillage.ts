@@ -64,6 +64,9 @@ export class Game implements VillagePillageGame {
             }
             for (let i = 0; i < 3; i++) {
                 $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="relic_bank_${info.id}_${i}" class="relic relic_${i} hidden"></div>`);
+                if (i < info.relics) {
+                    $(`relic_bank_${info.id}_${i}`).classList.remove("hidden");
+                }
             }
 
             for (let i = 0; i < parseInt(info.stockpile); i++) {
@@ -239,6 +242,38 @@ export class Game implements VillagePillageGame {
             await this.animationManager.slideAndAttach($(`turnip_stockpile_${player_id}_${i + playerStock}`), $(`stockpile_${player_id}`), {bump: 1, duration: 200});
         }
         await new Promise(r => setTimeout(r, 500));
+    }
+
+    public async notif_relic(args: {player_id: number, num: "first" | "second" | "third", stock_spent: number, bank_spent: number}) {
+        let num: number;
+        switch (args.num) {
+            case "first":
+                num = 0;
+                break;
+            case "second":
+                num = 1;
+                break;
+            case "third":
+                num = 2;
+                break;
+        }
+
+        let curStock: number = $(`stockpile_${args.player_id}`).children.length - 1;
+        for (let i = 0; i < args.stock_spent; i++) {
+            await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${curStock - i}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
+        }
+
+        let remainingBankSpent = args.bank_spent;
+
+        for (let i = 4; i >= 0; i--) {
+            if (remainingBankSpent > 0 && $(`turnip_wrap_${args.player_id}_${i}`).children.length > 0) {
+                await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
+                remainingBankSpent--;
+            }
+        }
+
+        await new Promise(r => setTimeout(r, 0)).then(() => $(`relic_bank_${args.player_id}_${num}`).classList.remove("hidden"));
+        await this.animationManager.slideIn( $(`relic_bank_${args.player_id}_${num}`), $(`overall_player_board_${args.player_id}`), {duration: 500});
     }
 
     public async notif_reset(args: Card[][]) {

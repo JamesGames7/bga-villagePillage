@@ -4,6 +4,7 @@ export interface VillagePillagePlayer extends Player {
     // any information you add on each result['players']
     bank: string;
     stockpile: string;
+    relics: number;
     left: Card | null;
     right: Card | null;
     exhausted: Card[];

@@ -79,14 +79,13 @@ class Game extends \Bga\GameFramework\Table
             new Card("Innkeeper", Types::Farmer, 18),
             new Card("Labyrinth", Types::Wall, 19),
             new Card("Pickler", Types::Farmer, 20),
-            // TODO only wall effect done
-            new Card("Miner", Types::Farmer, 21, wallEffects: ["gain" => ["num" => 5], "exhaust" => []]),
+            new Card("Miner", Types::Farmer, 21),
             new Card("Cathedral", Types::Wall, 22),
             new Card("Rat Catcher", Types::Farmer, 23),
         ];  
         $this->START_CARDS = [
             new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
-            new Card("Merchant", Types::Merchant, 1),
+            new Card("Merchant", Types::Merchant, 1, ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]]),
             new Card("Wall", Types::Wall, 4, farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1], "bank" => ["num" => 1]]),
             new Card("Raider", Types::Raider, 8, farmEffects: ["steal" => ["num" => 4]], merchantEffects: ["steal" => ["num" => 4]]),
         ];
@@ -157,7 +156,7 @@ class Game extends \Bga\GameFramework\Table
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
         $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank` FROM `player`"
+            "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank`, `relics` FROM `player`"
         );
         foreach ($this->loadPlayersBasicInfos() as $id => $info) {
             $leftCard = null;
