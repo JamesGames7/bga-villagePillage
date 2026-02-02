@@ -143,6 +143,10 @@ export class Game implements VillagePillageGame {
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), {sort: this.sortFunction});
         this.shopStock.addCards(gamedatas.shop);
+
+        this.shopStock.onSelectionChange = (selection, lastChange) => {
+            ($('confirm_buy') as any).disabled = selection.length == 0;
+        }
     } 
 
     private sortFunction(a: Card, b: Card): number {
@@ -157,6 +161,13 @@ export class Game implements VillagePillageGame {
                     this.handStock.setSelectionMode("single");
                 }
                 break;
+            case "ResolveCard":
+                if (this.bga.players.isCurrentPlayerActive()) {
+                    this.shopStock.setSelectionMode("single");
+                    this.bga.statusBar.addActionButton("Confirm", () => {
+                        this.bga.actions.performAction('actBuyCard', {id: this.shopStock.getSelection()[0].id});
+                    }, {disabled: true, id: "confirm_buy"});
+                }
         }
     }
 
@@ -274,6 +285,7 @@ export class Game implements VillagePillageGame {
 
         await new Promise(r => setTimeout(r, 0)).then(() => $(`relic_bank_${args.player_id}_${num}`).classList.remove("hidden"));
         await this.animationManager.slideIn( $(`relic_bank_${args.player_id}_${num}`), $(`overall_player_board_${args.player_id}`), {duration: 500});
+        await new Promise(r => setTimeout(r, 500));
     }
 
     public async notif_reset(args: Card[][]) {
@@ -295,6 +307,47 @@ export class Game implements VillagePillageGame {
             }
         }
         this.handStock.setSelectionMode("single");
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    public notif_buyCardStart(args: any = null) {
+        this.shopStock.setSelectionMode("single");
+        this.bga.statusBar.addActionButton("Confirm", () => {
+            this.bga.actions.performAction('actBuyCard', {id: this.shopStock.getSelection()[0].id});
+        }, {disabled: true, id: "confirm_buy"});
+    }
+
+    public async notif_buyCard(args: {card: Card, player_id: number, updatePlace: "bank" | "stockpile", num: number}) {
+        this.shopStock.setSelectionMode("none");
+        let numLeft = args.num;
+        switch (args.updatePlace) {
+            case "bank":
+                for (let i = 4; i >= 0; i--) {
+                    if ($(`turnip_wrap_${args.player_id}_${i}`).children.length > 0 && numLeft > 0) {
+                        await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
+                    }
+                }
+                break;
+            case "stockpile":
+                for (let i = 0; i < numLeft; i++) {
+                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
+                }
+                break;
+        }
+        if (this.player_id == args.player_id) {
+            await this.handStock.addCard(args.card);
+            // TODO need to change id of card
+            await this.handStock.addCard({id: args.card.id, type: args.card.type, player_id: args.player_id.toString(), name: args.card.name}, {duration: 0});
+            await this.handStock.removeCard(args.card);
+        } else {
+            await this.voidStock.addCard(args.card);
+        }
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    public async notif_drawNewShop(args: {card: Card}) {
+        await this.shopStock.addCard(args.card, {fromStock: this.voidStock, initialSide: "back", finalSide: "front"});
+        await new Promise(r => setTimeout(r, 500));
     }
 
 	public notif_test(args: any) {

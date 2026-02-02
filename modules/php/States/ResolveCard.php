@@ -22,7 +22,6 @@ class ResolveCard extends GameState
 	private $allCards;
 	private $cards;
 	private $card_info;
-	private $stopped_card;
 	private bool $run_effect = true;
 
     function __construct(
@@ -30,11 +29,12 @@ class ResolveCard extends GameState
     ) {
         parent::__construct($game,
             id: 20,
-            type: StateType::GAME,
+            type: StateType::MULTIPLE_ACTIVE_PLAYER,
 
             // optional
+			descriptionMyTurn: clienttranslate('${you} must choose a card to buy'),
             description: clienttranslate('Resolving card effects'),
-            transitions: ["" => 10],
+            transitions: ["next" => 10, "stay" => 20],
             updateGameProgression: false,
             initialPrivate: null,
         );
@@ -48,12 +48,25 @@ class ResolveCard extends GameState
 
     function onEnteringState() {
         // the code to run when entering the state
+		$temp = $this->globals->get("cards");
+		if ($temp == null || $temp == []) {
+			$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
+			$this->cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
+			$this->card_info = array_map(fn($card) => array_values(array_filter($this->allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($this->cards));
+			$this->globals->set("cards", $this->cards);
+			$this->globals->set("stoppedCard", -1);
+		} else {
+			$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
+			$this->cards = $this->globals->get("cards");
+			$this->card_info = array_map(fn($card) => array_values(array_filter($this->allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($this->cards));
+		}
 
-		$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
-		$this->cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
-		$this->card_info = array_map(fn($card) => array_values(array_filter($this->allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($this->cards));
+		$this->run_effect = $this->globals->get("stoppedCard") == -1 ? true : false;
 
-        if ($this->doEffects() == "done") return "";
+        if ($this->doEffects($this->globals->get("stoppedCard")) == "done") {
+			$this->globals->set("cards", []);
+			return "next";
+		}
     }   
 
 	private function doEffects(int $card_id = -1) {
@@ -63,38 +76,45 @@ class ResolveCard extends GameState
             foreach ($this->card_info as $card) {
                 $card_deck = $this->cards[$i];
                 if ($card->getType() == $type) {
-                    $player_id = $card_deck["location_arg"];
-                    $opponent_id = $card_deck["location"] == "left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
-                    $opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . $card_deck["location"] == "left" ? "right" : "left", $opponent_id)))[0];
-                    $opp_card = array_values(array_filter($this->allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
-                    
-                    $card_effect = $this->typeToEffect[$opp_card->getType()->value];
+					if ($this->run_effect) {
+						$this->globals->set("stoppedCard", $card->getId());
+						$this->globals->set("card_name", $card->getName());
+						$player_id = $card_deck["location_arg"];
+						$opponent_id = $card_deck["location"] == "left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
+						$opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . $card_deck["location"] == "left" ? "right" : "left", $opponent_id)))[0];
+						$opp_card = array_values(array_filter($this->allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
+						
+						$card_effect = $this->typeToEffect[$opp_card->getType()->value];
 
-                    $effect = $card->$card_effect(intval($this->cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
-                    
-                    foreach ($effect as $function => $args) {
-                        $this->$function($args);
-                    }
+						$effect = $card->$card_effect(intval($this->cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
+						
+						foreach ($effect as $function => $args) {
+							$this->$function($args);
+						}
+					}
+					if ($card_id == $card->getId()) {
+						$this->run_effect = true;
+					}
                 }
-				if ($card_id == $card->getId()) {
-					$this->run_effect = true;
-				}
                 $i++;
             }
         }
 
-        $this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
-        $this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
-        $this->game->cards->moveAllCardsInLocationKeepOrder("exhausted", "hand");
+		if ($this->run_effect) {
+			$this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
+			$this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
+			$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted", "hand");
 
-        $this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_left", "exhausted");
-        $this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_right", "exhausted");
+			$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_left", "exhausted");
+			$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_right", "exhausted");
 
-        $this->notify->all("reset", 'Start of next round', [
-			array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->game->cards->getCardsInLocation("exhausted")))
-		]);
+			$this->notify->all("reset", 'Start of next round', [
+				array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->game->cards->getCardsInLocation("exhausted")))
+			]);
 
-		return "done";
+			return "done";
+		}
+		return "incomplete";
 	}
 
     private function gain(array $args): void {
@@ -215,12 +235,62 @@ class ResolveCard extends GameState
 				"stock_spent" => $stockpileSubtract,
 				"bank_spent" => $cost
 			]);
+		} else {
+			$unable = array_keys($args["unable"])[0];
+			$this->$unable(["player_id" => $player_id, "args" => array_values($args["unable"])]);
 		}
-		// TODO other action
 		// TODO end game if necessary
 	}
 
-    private function buyCard(array $args): void {
+    public function buyCard(array $args): void {
+		$player_id = $args["player_id"];
+		$this->run_effect = false;
+		$this->globals->set("cost", $args["args"][0]["num"]);
+		$this->gamestate->setPlayersMultiactive([$player_id], "stay");
+		$this->notify->player($player_id, 'buyCardStart', '', []);
+    }
 
+	#[PossibleAction]
+	public function actBuyCard(int $id, int $currentPlayerId): void {
+		$boughtCard = array_filter($this->game->cards->getCardsInLocation("shop"), fn($card) => $card["type_arg"] == $id);
+		if (count($boughtCard) > 0) {
+			$this->game->cards->moveCard(array_values($boughtCard)[0]["id"], "hand", $currentPlayerId);
+
+			$cost = $this->globals->get("cost");
+
+			$stockpile = $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $currentPlayerId");
+
+			$updatePlace = intval($stockpile) > 0 ? "stockpile" : "bank";
+
+			$this->game->DbQuery("UPDATE `player` SET `$updatePlace` = `$updatePlace` - $cost WHERE `player_id` = $currentPlayerId");
+
+			$this->notify->all("buyCard", '${player_name} bought ${bought_card} for ${num} turnip${plural} using ${card_name}', [
+				"player_name" => $this->game->getPlayerNameById($currentPlayerId),
+				"player_id" => $currentPlayerId,
+				"num" => $cost,
+				"updatePlace" => $updatePlace,
+				"plural" => $cost == 1 ? "" : "s",
+				"bought_card" => array_values($boughtCard)[0]["type"],
+				"card_name" => $this->globals->get("card_name"),
+				"card" => array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $id))[0]->getInfo(0)
+			]);
+
+			$newCard = $this->game->cards->getCardOnTop("deck");
+			$this->game->cards->pickCardForLocation("deck", "shop");
+
+			$this->notify->all("drawNewShop", '${card_name} enters the shop', [
+				"card" => array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0),
+				"card_name" => array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getName()
+			]);
+
+			$this->gamestate->setAllPlayersNonMultiactive("stay");
+		} else {
+			throw new \BgaUserException("Not a valid card choice.");
+		}
+	}
+
+    function zombie(int $playerId): string {
+        // the code to run when the player is a Zombie
+        return "";
     }
 }

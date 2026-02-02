@@ -126,7 +126,9 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
 
 .selected {
     outline-color: red;
+}
 
+.hand-stock .selected {
     &.game-card-front {
         transform: translateY(calc(var(--bga-cards_card-height)/-5));
     }

@@ -146,7 +146,8 @@
 .selected {
   outline-color: red;
 }
-.selected.game-card-front {
+
+.hand-stock .selected.game-card-front {
   transform: translateY(calc(var(--bga-cards_card-height) / -5));
 }
 
