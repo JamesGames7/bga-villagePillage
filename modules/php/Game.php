@@ -63,8 +63,7 @@ class Game extends \Bga\GameFramework\Table
 
         $this->CARDS =  [
             new Card("Cutpurse", Types::Raider, 2, farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]], raidEffects: ["steal" => ["num" => 1, "swap" => true]]),
-            // TODO multiple effects on unable
-            new Card("Doctor", Types::Merchant, 3),
+            new Card("Doctor", Types::Merchant, 3, ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]]),
             new Card("Dungeon", Types::Wall, 5, wallEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
             // TODO draw card from deck
             new Card("Bard", Types::Merchant, 6),
@@ -76,7 +75,6 @@ class Game extends \Bga\GameFramework\Table
             new Card("Veteran", Types::Raider, 13, farmEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]], merchantEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]]),
             new Card("Mason", Types::Farmer, 14, wallEffects: ["gain" => ["num" => 4], "steal" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
             new Card("Treasury", Types::Wall, 15, raidEffects: ["steal" => ["num" => 2], "bank" => ["num" => 4]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]]),
-            // TODO steal from bank
             new Card("Burglar", Types::Raider, 16, farmEffects: ["steal" => ["num" => 4, "fromBank" => true]], merchantEffects: ["steal" => ["num" => 4, "fromBank" => true]]),
             new Card("Trapper", Types::Raider, 17, farmEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], merchantEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1]]),
             new Card("Innkeeper", Types::Farmer, 18, merchantEffects: ["gain" => ["num" => 5], "buyCard" => ["num" => 0]], farmEffects: ["gain" => ["num" => 4]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]]),
@@ -160,7 +158,7 @@ class Game extends \Bga\GameFramework\Table
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
 
         // REVIEW remove when done
-        // $this->cards->moveCard(4, "hand", $currentPlayerId);
+        // $this->cards->moveCard(11, "hand", $currentPlayerId);
 
         $result["players"] = $this->getCollectionFromDb(
             "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank`, `relics` FROM `player`"

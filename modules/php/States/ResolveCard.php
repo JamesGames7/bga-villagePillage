@@ -271,8 +271,9 @@ class ResolveCard extends GameState
 				"bank_spent" => $cost
 			]);
 		} else {
-			$unable = array_keys($args["unable"])[0];
-			$this->$unable(["player_id" => $player_id, "args" => array_values($args["unable"])]);
+			foreach ($args["unable"] as $fn => $arg) {
+				$this->$fn(array_merge(["player_id" => $player_id], $arg, $args));
+			}
 		}
 		// TODO end game if necessary
 	}
@@ -280,7 +281,7 @@ class ResolveCard extends GameState
     public function buyCard(array $args): void {
 		$player_id = $args["player_id"];
 		$this->run_effect = false;
-		$this->globals->set("cost", $args["args"][0]["num"]);
+		$this->globals->set("cost", $args["num"]);
 		$this->gamestate->setPlayersMultiactive([$player_id], "stay");
 		$this->notify->player($player_id, 'buyCardStart', '', []);
     }
