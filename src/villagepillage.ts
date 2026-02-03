@@ -145,7 +145,7 @@ export class Game implements VillagePillageGame {
         this.shopStock.addCards(gamedatas.shop);
 
         this.shopStock.onSelectionChange = (selection, lastChange) => {
-            ($('confirm_buy') as any).disabled = selection.length == 0;
+            if ($('confirm_buy')) ($('confirm_buy') as any).disabled = selection.length == 0;
         }
     } 
 

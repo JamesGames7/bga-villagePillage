@@ -153,7 +153,8 @@ class Game {
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction });
         this.shopStock.addCards(gamedatas.shop);
         this.shopStock.onSelectionChange = (selection, lastChange) => {
-            $('confirm_buy').disabled = selection.length == 0;
+            if ($('confirm_buy'))
+                $('confirm_buy').disabled = selection.length == 0;
         };
     }
     sortFunction(a, b) {
