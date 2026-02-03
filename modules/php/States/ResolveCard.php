@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\VillagePillageJames\States;
 
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
@@ -278,7 +279,7 @@ class ResolveCard extends GameState
 		// TODO end game if necessary
 	}
 
-    public function buyCard(array $args): void {
+    private function buyCard(array $args): void {
 		$player_id = $args["player_id"];
 		$this->run_effect = false;
 		$this->globals->set("cost", $args["num"]);
@@ -323,6 +324,28 @@ class ResolveCard extends GameState
 		} else {
 			throw new \BgaUserException("Not a valid card choice.");
 		}
+	}
+
+	private function drawCard(array $args): void {
+		$player_id = $args["player_id"];
+
+		$newCard = $this->game->cards->getCardOnTop("deck");
+
+		$this->game->cards->pickCardForLocation("deck", "hand", $player_id);
+
+		$this->notify->all("drawCard", '${player_name} draws a card using ${card_name}', [
+			"player_name" => $this->game->getPlayerNameById($player_id),
+			"player_id" => $player_id,
+
+			"card_name" => $args["card_name"],
+
+			"_private" => [
+				$player_id => new NotificationMessage('${player_name} draws ${_private.new_card_name} using ${card_name}', [
+					"new_card_name" => $newCard["type"],
+					"new_card" => array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0)
+				])
+			]
+		]);
 	}
 
     function zombie(int $playerId): string {

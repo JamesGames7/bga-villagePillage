@@ -302,28 +302,6 @@ export class Game implements VillagePillageGame {
         await new Promise(r => setTimeout(r, 500));
     }
 
-    public async notif_reset(args: Card[][]) {
-        for (let player_id of this.gamedatas.playerorder) {
-            player_id = player_id.toString();
-            if (player_id == this.player_id.toString()) {
-                await this.handStock.addCards(this.exhaustedStocks[player_id].getCards());
-            } else {
-                await this.voidStock.addCards(this.exhaustedStocks[player_id].getCards())
-            }
-            let curArgs: Card[] = args[0].filter(arg => arg.player_id == player_id);
-            await this.exhaustedStocks[player_id].addCards(curArgs);
-            if (player_id == this.player_id.toString()) {
-                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
-                await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
-            } else {
-                await this.leftRightStocks[player_id].left.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
-                await this.leftRightStocks[player_id].right.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
-            }
-        }
-        this.handStock.setSelectionMode("single");
-        await new Promise(r => setTimeout(r, 500));
-    }
-
     public notif_buyCardStart(args: any = null) {
         this.shopStock.setSelectionMode("single");
         this.bga.statusBar.addActionButton("Confirm", () => {
@@ -350,7 +328,6 @@ export class Game implements VillagePillageGame {
         }
         if (this.player_id == args.player_id) {
             await this.handStock.addCard(args.card);
-            // TODO need to change id of card
             await this.handStock.addCard({id: args.card.id, type: args.card.type, player_id: args.player_id.toString(), name: args.card.name}, {duration: 0});
             await this.handStock.removeCard(args.card);
         } else {
@@ -361,6 +338,36 @@ export class Game implements VillagePillageGame {
 
     public async notif_drawNewShop(args: {card: Card}) {
         await this.shopStock.addCard(args.card, {fromStock: this.voidStock, initialSide: "back", finalSide: "front"});
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    public async notif_drawCard(args: {player_id: number, _private: {new_card: Card}}) {
+        let card: Card = args._private.new_card;
+        await this.handStock.addCard(card, {fromStock: this.voidStock, initialSide: "back", finalSide: "front"})
+        await this.handStock.addCard({name: card.name, id: card.id, type: card.type, player_id: args.player_id.toString()}, {duration: 0});
+        await this.handStock.removeCard(card);
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    public async notif_reset(args: Card[][]) {
+        for (let player_id of this.gamedatas.playerorder) {
+            player_id = player_id.toString();
+            if (player_id == this.player_id.toString()) {
+                await this.handStock.addCards(this.exhaustedStocks[player_id].getCards());
+            } else {
+                await this.voidStock.addCards(this.exhaustedStocks[player_id].getCards())
+            }
+            let curArgs: Card[] = args[0].filter(arg => arg.player_id == player_id);
+            await this.exhaustedStocks[player_id].addCards(curArgs);
+            if (player_id == this.player_id.toString()) {
+                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
+                await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
+            } else {
+                await this.leftRightStocks[player_id].left.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
+                await this.leftRightStocks[player_id].right.removeAll({slideTo: $(`overall_player_board_${player_id}`)})
+            }
+        }
+        this.handStock.setSelectionMode("single");
         await new Promise(r => setTimeout(r, 500));
     }
 
