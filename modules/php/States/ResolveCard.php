@@ -77,7 +77,7 @@ class ResolveCard extends GameState
                 $card_deck = $this->cards[$i];
                 if ($card->getType() == $type) {
 					if ($this->run_effect) {
-						$this->globals->set("stoppedCard", $card->getId());
+						$this->globals->set("stoppedCard", intval($card_deck["id"]));
 						$this->globals->set("card_name", $card->getName());
 						$player_id = $card_deck["location_arg"];
 						$opponent_id = $card_deck["location"] == "left" || $card_deck["location"] == "exhausted_left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
@@ -92,7 +92,7 @@ class ResolveCard extends GameState
 							$this->$function($args);
 						}
 					}
-					if ($card_id == $card->getId()) {
+					if ($card_id == $card_deck["id"]) {
 						$this->run_effect = true;
 					}
                 }
