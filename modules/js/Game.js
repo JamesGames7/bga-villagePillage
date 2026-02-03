@@ -241,9 +241,21 @@ class Game {
         let opponent_id = args.player_id2;
         let playerStock = $(`stockpile_${player_id}`).children.length;
         let opponentStock = $(`stockpile_${opponent_id}`).children.length;
-        for (let i = 0; i < args.num; i++) {
+        for (let i = 0; i < args.stock; i++) {
             $(`turnip_stockpile_${opponent_id}_${opponentStock - 1 - i}`).id = `turnip_stockpile_${player_id}_${i + playerStock}`;
             await this.animationManager.slideAndAttach($(`turnip_stockpile_${player_id}_${i + playerStock}`), $(`stockpile_${player_id}`), { bump: 1, duration: 200 });
+        }
+        let remaining = args.bank;
+        for (let i = 4; i >= 0; i--) {
+            let turnipEl = $(`turnip_bank_${opponent_id}_${i}`);
+            console.log(turnipEl);
+            if (turnipEl && remaining > 0) {
+                let id = `turnip_stockpile_${player_id}_${$(`stockpile_${player_id}`).children.length}`;
+                turnipEl.id = id;
+                await this.animationManager.slideAndAttach($(id), $(`stockpile_${player_id}`), { bump: 1, duration: 200 });
+                console.log($(id));
+                remaining--;
+            }
         }
         await new Promise(r => setTimeout(r, 500));
     }
@@ -317,7 +329,7 @@ class Game {
                 break;
             case "stockpile":
                 for (let i = 0; i < numLeft; i++) {
-                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
+                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${$(`stockpile_${args.player_id}`).children.length - 1}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
                 }
                 break;
         }

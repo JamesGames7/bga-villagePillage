@@ -240,18 +240,32 @@ export class Game implements VillagePillageGame {
         await new Promise(r => setTimeout(r, 500));
     }
 
-    public async notif_steal(args: {player_id1: number, player_id2: number, num: number}) {
+    public async notif_steal(args: {player_id1: number, player_id2: number, num: number, stock: number, bank: number}) {
         let player_id = args.player_id1;
         let opponent_id = args.player_id2;
         
         let playerStock: number = $(`stockpile_${player_id}`).children.length;
         let opponentStock: number = $(`stockpile_${opponent_id}`).children.length;
 
-        for (let i = 0; i < args.num; i++) {
+        for (let i = 0; i < args.stock; i++) {
             $(`turnip_stockpile_${opponent_id}_${opponentStock - 1 - i}`).id = `turnip_stockpile_${player_id}_${i + playerStock}`;
 
             await this.animationManager.slideAndAttach($(`turnip_stockpile_${player_id}_${i + playerStock}`), $(`stockpile_${player_id}`), {bump: 1, duration: 200});
         }
+
+        let remaining: number = args.bank;
+        for (let i = 4; i >= 0; i--) {
+            let turnipEl = $(`turnip_bank_${opponent_id}_${i}`);
+            console.log(turnipEl);
+            if (turnipEl && remaining > 0) {
+                let id = `turnip_stockpile_${player_id}_${$(`stockpile_${player_id}`).children.length}`
+                turnipEl.id = id;
+                await this.animationManager.slideAndAttach($(id), $(`stockpile_${player_id}`), {bump: 1, duration: 200});
+                console.log($(id));
+                remaining--;
+            }
+        }
+
         await new Promise(r => setTimeout(r, 500));
     }
 
@@ -330,7 +344,7 @@ export class Game implements VillagePillageGame {
                 break;
             case "stockpile":
                 for (let i = 0; i < numLeft; i++) {
-                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
+                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${$(`stockpile_${args.player_id}`).children.length - 1}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
                 }
                 break;
         }

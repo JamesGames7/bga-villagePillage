@@ -174,10 +174,21 @@ class ResolveCard extends GameState
 			$opponent_stock = $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id");
 		}
 
-        $realNum = min($num, $opponent_stock);
+		if (array_key_exists("fromBank", $args) && $args["fromBank"]) {
+			$realNum = min($num, $opponent_stock + $opponent_bank);
+
+			$stockSub = min($num, $opponent_stock);
+			$bankSub = $realNum - $stockSub;
+		} else {
+			$realNum = min($num, $opponent_stock);
+
+			$stockSub = $realNum;
+			$bankSub = 0;
+		}
 
 		// FIXME error with 2 raiders and not enough
-        $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` - $realNum WHERE `player_id` = $opponent_id");
+        $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` - $stockSub WHERE `player_id` = $opponent_id");
+        $this->game->DbQuery("UPDATE `player` SET `bank` = `bank` - $bankSub WHERE `player_id` = $opponent_id");
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` + $realNum WHERE `player_id` = $player_id");
 
         $this->notify->all("steal", '${player_name1} steals ${num} turnip${plural} from ${player_name2} using ${card_name}', [
@@ -187,7 +198,9 @@ class ResolveCard extends GameState
             "player_name2" => $this->game->getPlayerNameById($opponent_id),
             "num" => $realNum,
             "card_name" => $args["card_name"],
-            "plural" => $realNum == 1 ? "" : "s"
+            "plural" => $realNum == 1 ? "" : "s",
+			"stock" => $stockSub,
+			"bank" => $bankSub
         ]);
     }
 	
