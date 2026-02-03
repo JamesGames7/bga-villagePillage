@@ -38,13 +38,15 @@ class RevealCard extends GameState
             $left = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("left", $id))[0]["type_arg"]))[0]->getInfo($id);
             $right = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("right", $id))[0]["type_arg"]))[0]->getInfo($id);
 
-            $this->notify->all("reveal", '${player_name} plays ${card_1} and ${card_2}', [
+            $this->notify->all("reveal", '${player_name} plays <mark class="${type_1}">${card_1}</mark> and <mark class="${type_2}">${card_2}</mark>', [
                 "left" => $left,
                 "right" => $right,
                 "player_name" => $data["player_name"],
                 "player_id" => $id,
                 "card_1" => $left["name"],
-                "card_2" => $right["name"]
+                "card_2" => $right["name"],
+                "type_1" => $left["type"]->value,
+                "type_2" => $right["type"]->value,
             ]);
         }
         return "";

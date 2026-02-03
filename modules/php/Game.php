@@ -154,9 +154,6 @@ class Game extends \Bga\GameFramework\Table
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
 
-        // REVIEW remove when done
-        // $this->cards->moveCard(18, "hand", $currentPlayerId);
-
         $result["players"] = $this->getCollectionFromDb(
             "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank`, `relics` FROM `player`"
         );

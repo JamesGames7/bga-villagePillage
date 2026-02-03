@@ -164,3 +164,16 @@
   z-index: -1;
   width: 200px !important;
 }
+
+mark.Merchant {
+  background-color: #eded1e;
+}
+mark.Raider {
+  background-color: #ef0d0d;
+}
+mark.Wall {
+  background-color: #00aaff;
+}
+mark.Farmer {
+  background-color: #0ab20a;
+}

@@ -148,3 +148,21 @@ $left_pos: (128px, 82px, 130px, 82px, 128px);
     z-index: -1;
     width: 200px !important;
 }
+
+mark {
+    &.Merchant {
+        background-color: #eded1e;
+    }
+
+    &.Raider {
+        background-color: #ef0d0d;
+    }
+
+    &.Wall {
+        background-color: #00aaff;
+    }
+
+    &.Farmer {
+        background-color: #0ab20a;
+    }
+}
