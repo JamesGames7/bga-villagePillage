@@ -71,24 +71,55 @@ class ResolveCard extends GameState
     }   
 
 	private function doEffects(int $card_id = -1) {
+		$toSort = [];
+		for ($i = 0; $i < count($this->cards); $i++) {
+			$toSort[] = $this->card_info[$i]->getInfo($this->cards[$i]["location_arg"]);
+		}
 		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
+			$sortNums = [];
+			usort($toSort, function ($a, $b) use ($sortNums) {
+				$aId = $a["player_id"];
+				$bId = $b["player_id"];
+
+				$aTurnips = intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $aId")) + intval($this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $aId"));
+				$bTurnips = intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $bId")) + intval($this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $bId"));
+
+				if ($aTurnips == $bTurnips) {
+					if (array_key_exists($aTurnips, $sortNums)) {
+						if (array_key_exists($bTurnips, $sortNums[$aTurnips])) return $sortNums[$aTurnips][$bTurnips];
+					} else {
+						$sortNums[$aTurnips] = [];
+					}
+
+					$orderNum = [-1, 1][\bga_rand(0, 1)];
+
+					$sortNums[$aTurnips][$bTurnips] = $orderNum;
+					$sortNums[$bTurnips][$aTurnips] = $orderNum * -1;
+
+					return $orderNum;
+				}
+				return $aTurnips - $bTurnips;
+			});
+			$this->notify->all("test", '', [
+				$toSort
+			]);
 			$this->globals->set("card_type", $type->value);
-            $i = 0;
             $opp_nums = $this->game->getCollectionFromDB("SELECT `player_id`, `stockpile`, `bank` FROM `player`");
-            foreach ($this->card_info as $card) {
-                $card_deck = $this->cards[$i];
-                if ($card->getType() == $type) {
+            foreach ($toSort as $card) {
+                $card_deck = array_values(array_filter($this->cards, fn($c) => $c["type_arg"] == $card["id"] && $c["location_arg"] == $card["player_id"]))[0];
+                if ($card["type"] == $type) {
 					if ($this->run_effect) {
 						$this->globals->set("stoppedCard", intval($card_deck["id"]));
-						$this->globals->set("card_name", $card->getName());
+						$this->globals->set("card_name", $card["name"]);
 						$player_id = $card_deck["location_arg"];
 						$opponent_id = $card_deck["location"] == "left" || $card_deck["location"] == "exhausted_left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
 						$opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . ($card_deck["location"] == "left" ? "right" : "left"), $opponent_id)))[0];
-						$opp_card = array_values(array_filter($this->allCards, fn($card) => $card->getId() == $opp_card_deck["type_arg"]))[0];
+						$opp_card = array_values(array_filter($this->allCards, fn($c) => $c->getId() == $opp_card_deck["type_arg"]))[0];
 						
 						$card_effect = $this->typeToEffect[$opp_card->getType()->value];
 
-						$effect = $card->$card_effect(intval($this->cards[$i]["location_arg"]), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
+						$cardForEffect = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["id"]))[0];
+						$effect = $cardForEffect->$card_effect(intval($player_id), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
 						
 						foreach ($effect as $function => $args) {
 							$this->$function($args);
@@ -98,7 +129,6 @@ class ResolveCard extends GameState
 						$this->run_effect = true;
 					}
                 }
-                $i++;
             }
         }
 

@@ -248,12 +248,10 @@ class Game {
         let remaining = args.bank;
         for (let i = 4; i >= 0; i--) {
             let turnipEl = $(`turnip_bank_${opponent_id}_${i}`);
-            console.log(turnipEl);
             if (turnipEl && remaining > 0) {
                 let id = `turnip_stockpile_${player_id}_${$(`stockpile_${player_id}`).children.length}`;
                 turnipEl.id = id;
                 await this.animationManager.slideAndAttach($(id), $(`stockpile_${player_id}`), { bump: 1, duration: 200 });
-                console.log($(id));
                 remaining--;
             }
         }
