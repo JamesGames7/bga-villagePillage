@@ -13,10 +13,6 @@ use Types;
 
 use function PHPSTORM_META\type;
 
-/**
- * TODO
- * ? 2 people stealing from same person
- */
 class ResolveCard extends GameState
 {
     private $typeToEffect = [
@@ -29,6 +25,7 @@ class ResolveCard extends GameState
 	private $cards;
 	private $card_info;
 	private bool $run_effect = true;
+	private $stealRemainder = [];
 
     function __construct(
         protected Game $game,
@@ -83,10 +80,6 @@ class ResolveCard extends GameState
 		for ($i = 0; $i < count($this->cards); $i++) {
 			$toSort[] = $this->card_info[$i]->getInfo($this->cards[$i]["location_arg"]);
 		}
-
-		// TODO add array of cards with steal in them, add args that give factor of how many current cards to divide 
-		// * or don't do factor and instead do number bc remainder exists
-		// ! Cards ordered in order of steal factor
 
 		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
 			$sortNums = [];
@@ -222,6 +215,7 @@ class ResolveCard extends GameState
         $player_id = $args["player_id"];
         $opponent_id = $args["opponent_id"];
         $num = $args["num"];
+		$original = $num;
         $opponent_stock = $args["opponent_stock"];
 
         $opponent_bank = $args["opponent_bank"];
@@ -234,10 +228,46 @@ class ResolveCard extends GameState
 			$opponent_stock = $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id");
 		}
 
-		if (array_key_exists("fromBank", $args) && $args["fromBank"]) {
-			$realNum = min($num, $opponent_stock + $opponent_bank);
+		$opCardDeck = array_values($this->game->cards->getCardsInLocation($args["side"], $args["side"] == "right" ? $this->game->getPlayerBefore($opponent_id) : $this->game->getPlayerAfter($opponent_id)))[0];
+		$opCardAgainstDeck = array_values($this->game->cards->getCardsInLocation($args["side"] == "left" ? "right" : "left", $opponent_id))[0];
 
+		$opCard = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == $opCardDeck["type_arg"]))[0];
+		$opCardAgainst = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == $opCardAgainstDeck["type_arg"]))[0]->getType()->value;
+
+		$fnName = ["Farmer" => "farmEffect", "Wall" => "wallEffect", "Raider" => "raidEffect", "Merchant" => "merchantEffect"];
+		$curFn = $fnName[$opCardAgainst];
+
+		$opCardEffects = $opCard->$curFn(0, 0, 0, 0, 0, "", "");
+
+		if (array_key_exists("steal", $opCardEffects) && $opponent_stock < $opCardEffects["steal"]["num"] + $num) {			
+			$opStealNum = $opCardEffects["steal"]["num"];
+
+			if (!array_key_exists($opponent_id, $this->stealRemainder)) {
+				if ($opponent_stock % 2 == 1) {
+					if ($opStealNum > $num) {
+						$remainder = 0;
+					} else if ($num > $opStealNum) {
+						$remainder = 1;
+					} else {
+						$remainder = bga_rand(0, 1);
+					}
+				} else {
+					$remainder = 0;
+				}
+			} else {
+				$remainder = $this->stealRemainder[$opponent_id];
+				unset($this->stealRemainder[$opponent_id]);
+			}
+
+			$num = floor($opponent_stock / 2);
+			$num += $remainder;
+			$this->stealRemainder[$opponent_id] = $opponent_stock % 2 == 0 ? 0 : 1 - $remainder;
+		}
+
+		if (array_key_exists("fromBank", $args) && $args["fromBank"]) {
 			$stockSub = min($num, $opponent_stock);
+
+			$realNum = min($original, $stockSub + $opponent_bank);
 			$bankSub = $realNum - $stockSub;
 		} else {
 			$realNum = min($num, $opponent_stock);

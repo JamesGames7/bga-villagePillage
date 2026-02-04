@@ -345,6 +345,7 @@ export class Game implements VillagePillageGame {
                 for (let i = 4; i >= 0; i--) {
                     if ($(`turnip_wrap_${args.player_id}_${i}`).children.length > 0 && numLeft > 0) {
                         await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), {duration: 200});
+                        numLeft--;
                     }
                 }
                 break;
