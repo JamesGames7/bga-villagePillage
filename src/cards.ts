@@ -18,7 +18,6 @@ export class CardsManager extends BgaCards.Manager<Card> {
                 div.style.backgroundPositionX = `-${Math.floor(card.id / 4)}00%`;
                 div.style.backgroundPositionY = `-${card.id % 4}00%`;
 
-                // TODO update tooltip
                 game.bga.gameui.addTooltipHtml(div.id, /*html*/`<strong>Name:</strong> ${card.name}<br><strong>Type:</strong> ${card.type}<br>`)
             },
             setupBackDiv: (card: Card, div: HTMLElement) => {

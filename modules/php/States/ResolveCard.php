@@ -11,7 +11,13 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\VillagePillageJames\Game;
 use Types;
 
-// FIXME - tiebreakers in terms of effects?
+use function PHPSTORM_META\type;
+
+/**
+ * TODO
+ * ? Choose order of merchants
+ * ? 2 people stealing from same person
+ */
 class ResolveCard extends GameState
 {
     private $typeToEffect = [
@@ -44,7 +50,7 @@ class ResolveCard extends GameState
     public function getArgs(): array
     {
         // the data sent to the front when entering the state
-        return [];
+        return ["choosingMerchant" => $this->globals->get("choosingMerchant", false)];
     } 
 
     function onEnteringState() {
@@ -56,6 +62,9 @@ class ResolveCard extends GameState
 			$this->card_info = array_map(fn($card) => array_values(array_filter($this->allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($this->cards));
 			$this->globals->set("cards", $this->cards);
 			$this->globals->set("stoppedCard", -1);
+
+			$this->globals->set("choosingMerchant", false);
+			$this->globals->set("firstMerchantSide", "none");
 		} else {
 			$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
 			$this->cards = $this->globals->get("cards");
@@ -75,6 +84,12 @@ class ResolveCard extends GameState
 		for ($i = 0; $i < count($this->cards); $i++) {
 			$toSort[] = $this->card_info[$i]->getInfo($this->cards[$i]["location_arg"]);
 		}
+
+		// TODO add array of cards with steal in them, add args that give factor of how many current cards to divide 
+		// * or don't do factor and instead do number bc remainder exists
+		// ! Cards ordered in order of steal factor
+
+		// TODO choose which merchant goes first
 		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
 			$sortNums = [];
 			usort($toSort, function ($a, $b) use ($sortNums) {
@@ -100,15 +115,30 @@ class ResolveCard extends GameState
 				}
 				return $aTurnips - $bTurnips;
 			});
-			$this->notify->all("test", '', [
-				$toSort
-			]);
 			$this->globals->set("card_type", $type->value);
+			// FIXME exhausting not highlighting card
             $opp_nums = $this->game->getCollectionFromDB("SELECT `player_id`, `stockpile`, `bank` FROM `player`");
-            foreach ($toSort as $card) {
+            for ($i = 0; $i < $this->game->getPlayerCount() * 2; $i++) {
+				if ($i < $this->game->getPlayerCount() * 2 - 2 && $type == Types::Merchant
+					&& $toSort[$i]["player_id"] == $toSort[$i + 1]["player_id"]
+					&& $toSort[$i]["type"] == Types::Merchant
+					&& $toSort[$i + 1]["type"] == Types::Merchant) {
+
+					$g = $this->globals->get("firstMerchantSide");
+					if ($g == null) {
+						$this->chooseMerchant(intval($toSort[$i]["player_id"]));
+					} else {
+						if (array_values($this->game->cards->getCardsInLocation($g["side"], $g["player_id"]))[0]["type_arg"] != $toSort[$i]["id"]) {
+							$temp = $toSort[$i];
+							$toSort[$i] = $toSort[$i + 1];
+							$toSort[$i + 1] = $temp;
+						}
+					}
+				}
+				$card = $toSort[$i];
                 $card_deck = array_values(array_filter($this->cards, fn($c) => $c["type_arg"] == $card["id"] && $c["location_arg"] == $card["player_id"]))[0];
                 if ($card["type"] == $type) {
-					if ($this->run_effect) {
+					if ($this->run_effect && (($card_id != -1 && $type == Types::Merchant) || $card_id == -1)) {
 						$this->globals->set("stoppedCard", intval($card_deck["id"]));
 						$this->globals->set("card_name", $card["name"]);
 						$player_id = $card_deck["location_arg"];
@@ -127,6 +157,8 @@ class ResolveCard extends GameState
 					}
 					if ($card_id == $card_deck["id"]) {
 						$this->run_effect = true;
+
+						// FIXME issue where reordering is putting last card in front of others - have to freeze somehow?
 					}
                 }
             }
@@ -197,7 +229,6 @@ class ResolveCard extends GameState
         $num = $args["num"];
         $opponent_stock = $args["opponent_stock"];
 
-        // TODO pass boolean that checks for if can steal from banked
         $opponent_bank = $args["opponent_bank"];
 
 		if (array_key_exists("swap", $args) && $args["swap"]) {
@@ -220,7 +251,6 @@ class ResolveCard extends GameState
 			$bankSub = 0;
 		}
 
-		// FIXME error with 2 raiders and not enough
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` - $stockSub WHERE `player_id` = $opponent_id");
         $this->game->DbQuery("UPDATE `player` SET `bank` = `bank` - $bankSub WHERE `player_id` = $opponent_id");
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` + $realNum WHERE `player_id` = $player_id");
@@ -390,6 +420,20 @@ class ResolveCard extends GameState
 				])
 			]
 		]);
+	}
+
+	private function chooseMerchant(int $player_id) {
+		$this->run_effect = false;
+		$this->gamestate->setPlayersMultiactive([$player_id], "stay");
+		$this->notify->player($player_id, 'chooseMerchantStart', '', []);
+		$this->globals->set("choosingMerchant", true);
+	}
+
+	#[PossibleAction]
+	public function actChooseMerchant(int $currentPlayerId, string $side) {
+		$this->globals->set("firstMerchantSide", ["player_id" => $currentPlayerId, "side" => $side]);
+
+		$this->gamestate->setAllPlayersNonMultiactive("stay");
 	}
 
     function zombie(int $playerId): string {

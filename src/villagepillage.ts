@@ -163,10 +163,40 @@ export class Game implements VillagePillageGame {
                 break;
             case "ResolveCard":
                 if (this.bga.players.isCurrentPlayerActive()) {
-                    this.shopStock.setSelectionMode("single");
-                    this.bga.statusBar.addActionButton("Confirm", () => {
-                        this.bga.actions.performAction('actBuyCard', {id: this.shopStock.getSelection()[0].id});
-                    }, {disabled: true, id: "confirm_buy"});
+                    if (args.args.choosingMerchant) {
+                        this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
+
+                        this.leftRightStocks[this.player_id].left.setSelectionMode("single");
+                        this.leftRightStocks[this.player_id].right.setSelectionMode("single");
+
+                        this.leftRightStocks[this.player_id].left.onSelectionChange = (selection, lastChange) => {
+                            if (selection.length > 0) {
+                                this.leftRightStocks[this.player_id].right.unselectAll();
+                                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = false;
+                            } else {
+                                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = true;
+                            }
+                        }
+                        this.leftRightStocks[this.player_id].right.onSelectionChange = (selection, lastChange) => {
+                            if (selection.length > 0) {
+                                this.leftRightStocks[this.player_id].left.unselectAll();
+                                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = false;
+                            } else {
+                                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = true;
+                            }
+                        }
+
+                        this.bga.statusBar.addActionButton("Confirm", () => {
+                            this.bga.actions.performAction("actChooseMerchant", {"side": this.leftRightStocks[this.player_id].left.getSelection().length > 0 ? "left" : "right"});
+                            this.leftRightStocks[this.player_id].left.setSelectionMode("none");
+                            this.leftRightStocks[this.player_id].right.setSelectionMode("none");
+                        }, {disabled: true, id: "confirm_merchant"})
+                    } else {
+                        this.shopStock.setSelectionMode("single");
+                        this.bga.statusBar.addActionButton("Confirm", () => {
+                            this.bga.actions.performAction('actBuyCard', {id: this.shopStock.getSelection()[0].id});
+                        }, {disabled: true, id: "confirm_buy"});
+                    }
                 }
         }
     }
@@ -367,6 +397,36 @@ export class Game implements VillagePillageGame {
         }
         this.handStock.setSelectionMode("single");
         await new Promise(r => setTimeout(r, 500));
+    }
+
+    public async notif_chooseMerchantStart(args: any) {
+        this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
+
+        this.leftRightStocks[this.player_id].left.setSelectionMode("single");
+        this.leftRightStocks[this.player_id].right.setSelectionMode("single");
+
+        this.leftRightStocks[this.player_id].left.onSelectionChange = (selection, lastChange) => {
+            if (selection.length > 0) {
+                this.leftRightStocks[this.player_id].right.unselectAll();
+                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = false;
+            } else {
+                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = true;
+            }
+        }
+        this.leftRightStocks[this.player_id].right.onSelectionChange = (selection, lastChange) => {
+            if (selection.length > 0) {
+                this.leftRightStocks[this.player_id].left.unselectAll();
+                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = false;
+            } else {
+                if ($('confirm_merchant')) ($('confirm_merchant') as any).disabled = true;
+            }
+        }
+
+        this.bga.statusBar.addActionButton("Confirm", () => {
+            this.bga.actions.performAction("actChooseMerchant", {"side": this.leftRightStocks[this.player_id].left.getSelection().length > 0 ? "left" : "right"});
+            this.leftRightStocks[this.player_id].left.setSelectionMode("none");
+            this.leftRightStocks[this.player_id].right.setSelectionMode("none");
+        }, {disabled: true, id: "confirm_merchant"})
     }
 
 	public notif_test(args: any) {
