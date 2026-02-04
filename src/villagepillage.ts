@@ -370,11 +370,13 @@ export class Game implements VillagePillageGame {
     }
 
     public async notif_drawCard(args: {player_id: number, _private: {new_card: Card}}) {
-        let card: Card = args._private.new_card;
-        await this.handStock.addCard(card, {fromStock: this.voidStock, initialSide: "back", finalSide: "front"})
-        await this.handStock.addCard({name: card.name, id: card.id, type: card.type, player_id: args.player_id.toString()}, {duration: 0});
-        await this.handStock.removeCard(card);
-        await new Promise(r => setTimeout(r, 500));
+        if (this.player_id == args.player_id) {
+            let card: Card = args._private.new_card;
+            await this.handStock.addCard(card, {fromStock: this.voidStock, initialSide: "back", finalSide: "front"})
+            await this.handStock.addCard({name: card.name, id: card.id, type: card.type, player_id: args.player_id.toString()}, {duration: 0});
+            await this.handStock.removeCard(card);
+            await new Promise(r => setTimeout(r, 500));
+        }
     }
 
     public async notif_reset(args: Card[][]) {

@@ -15,7 +15,6 @@ use function PHPSTORM_META\type;
 
 /**
  * TODO
- * ? Choose order of merchants
  * ? 2 people stealing from same person
  */
 class ResolveCard extends GameState
@@ -89,7 +88,6 @@ class ResolveCard extends GameState
 		// * or don't do factor and instead do number bc remainder exists
 		// ! Cards ordered in order of steal factor
 
-		// TODO choose which merchant goes first
 		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
 			$sortNums = [];
 			usort($toSort, function ($a, $b) use ($sortNums) {
@@ -116,7 +114,6 @@ class ResolveCard extends GameState
 				return $aTurnips - $bTurnips;
 			});
 			$this->globals->set("card_type", $type->value);
-			// FIXME exhausting not highlighting card
             $opp_nums = $this->game->getCollectionFromDB("SELECT `player_id`, `stockpile`, `bank` FROM `player`");
             for ($i = 0; $i < $this->game->getPlayerCount() * 2; $i++) {
 				if ($i < $this->game->getPlayerCount() * 2 - 2 && $type == Types::Merchant
@@ -124,8 +121,8 @@ class ResolveCard extends GameState
 					&& $toSort[$i]["type"] == Types::Merchant
 					&& $toSort[$i + 1]["type"] == Types::Merchant) {
 
-					$g = $this->globals->get("firstMerchantSide");
-					if ($g == null) {
+					$g = $this->globals->get("firstMerchantSide", "none");
+					if ($g == "none") {
 						$this->chooseMerchant(intval($toSort[$i]["player_id"]));
 					} else {
 						if (array_values($this->game->cards->getCardsInLocation($g["side"], $g["player_id"]))[0]["type_arg"] != $toSort[$i]["id"]) {
@@ -157,8 +154,6 @@ class ResolveCard extends GameState
 					}
 					if ($card_id == $card_deck["id"]) {
 						$this->run_effect = true;
-
-						// FIXME issue where reordering is putting last card in front of others - have to freeze somehow?
 					}
                 }
             }
@@ -275,11 +270,13 @@ class ResolveCard extends GameState
 		$exhausted_card_id = $args["op_card_id"];
 		$exhausted_card_name = $args["op_card_name"];
 		$side = $args["side"];
+
+		$type_op = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getName() == $exhausted_card_name, ))[0]->getType()->value;
 		
 		if (array_key_exists("swap", $args) && $args["swap"]) {
 			$this->game->cards->moveAllCardsInLocation($side == "left" ? "right" : "left", "exhausted_" . ($side == "left" ? "right" : "left"), $player_id, $player_id);
 
-			$this->notify->all("exhaust", '${player_name1} exhausts ${card_name} using <mark class="${type}">${card_name}</mark>', [
+			$this->notify->all("exhaust", '${player_name1} exhausts <mark class="${type}">${card_name}</mark> using <mark class="${type}">${card_name}</mark>', [
 				"type" => $this->globals->get("card_type"),
 				"player_id1" => $player_id,
 				"player_name1" => $this->game->getPlayerNameById($player_id),
@@ -288,8 +285,9 @@ class ResolveCard extends GameState
 		} else {
 			$this->game->cards->moveCard($exhausted_card_id, "exhausted_" . $side, $opponent_id);
 
-			$this->notify->all("exhaust", '${player_name1} exhausts ${player_name2}\'s ${op_card} using <mark class="${type}">${card_name}</mark>', [
+			$this->notify->all("exhaust", '${player_name1} exhausts ${player_name2}\'s <mark class="${type_op}">${op_card}</mark> using <mark class="${type}">${card_name}</mark>', [
 				"type" => $this->globals->get("card_type"),
+				"type_op" => $type_op,
 				"player_id1" => $player_id,
 				"player_name1" => $this->game->getPlayerNameById($player_id),
 				"player_id2" => $opponent_id,
@@ -406,6 +404,8 @@ class ResolveCard extends GameState
 
 		$this->game->cards->pickCardForLocation("deck", "hand", $player_id);
 
+		$new = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0);
+
 		$this->notify->all("drawCard", '${player_name} draws a card using <mark class="${type}">${card_name}</mark>', [
 			"type" => $this->globals->get("card_type"),
 			"player_name" => $this->game->getPlayerNameById($player_id),
@@ -414,9 +414,10 @@ class ResolveCard extends GameState
 			"card_name" => $args["card_name"],
 
 			"_private" => [
-				$player_id => new NotificationMessage('${player_name} draws ${_private.new_card_name} using <mark class="${type}">${card_name}</mark>', [
+				$player_id => new NotificationMessage('${player_name} draws <mark class="${_private.type_new}">${_private.new_card_name}</mark> using <mark class="${type}">${card_name}</mark>', [
 					"new_card_name" => $newCard["type"],
-					"new_card" => array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0)
+					"new_card" => $new,
+					"type_new" => $new["type"]->value
 				])
 			]
 		]);

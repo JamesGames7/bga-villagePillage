@@ -356,11 +356,13 @@ class Game {
         await new Promise(r => setTimeout(r, 500));
     }
     async notif_drawCard(args) {
-        let card = args._private.new_card;
-        await this.handStock.addCard(card, { fromStock: this.voidStock, initialSide: "back", finalSide: "front" });
-        await this.handStock.addCard({ name: card.name, id: card.id, type: card.type, player_id: args.player_id.toString() }, { duration: 0 });
-        await this.handStock.removeCard(card);
-        await new Promise(r => setTimeout(r, 500));
+        if (this.player_id == args.player_id) {
+            let card = args._private.new_card;
+            await this.handStock.addCard(card, { fromStock: this.voidStock, initialSide: "back", finalSide: "front" });
+            await this.handStock.addCard({ name: card.name, id: card.id, type: card.type, player_id: args.player_id.toString() }, { duration: 0 });
+            await this.handStock.removeCard(card);
+            await new Promise(r => setTimeout(r, 500));
+        }
     }
     async notif_reset(args) {
         for (let player_id of this.gamedatas.playerorder) {
