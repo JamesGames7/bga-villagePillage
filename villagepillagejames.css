@@ -112,8 +112,12 @@
   z-index: 1;
 }
 
+@media screen and (min-width: 840px) {
+  .hand-stock.floating {
+    bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height) - 200px) !important;
+  }
+}
 .hand-stock.floating {
-  bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height) - 200px) !important;
   transition: all 0.8s ease;
 }
 .hand-stock.floating:hover {
