@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * VillagePillageJames implementation : © <Your name here> <Your email address here>
+ * Villagepillage implementation : © <Your name here> <Your email address here>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -16,9 +16,9 @@
  */
 declare(strict_types=1);
 
-namespace Bga\Games\VillagePillageJames;
+namespace Bga\Games\VillagePillage;
 
-use Bga\Games\VillagePillageJames\States\PlayCard;
+use Bga\Games\VillagePillage\States\PlayCard;
 use Card;
 require_once('Card.php');
 use Types;
@@ -66,7 +66,7 @@ class Game extends \Bga\GameFramework\Table
             new Card("Bard", Types::Merchant, 6, ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]]),
             new Card("Moat", Types::Wall, 7, raidEffects: ["gain" => ["num" => 2], "steal" => ["num" => 3]], wallEffects: ["bank" => ["num" => 2]], merchantEffects: ["bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1, "swap" => true]]),
             new Card("Berserker", Types::Raider, 9, wallEffects: ["steal" => ["num" => 1, "swap" => true]], farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]]),
-            new Card("Florist", Types::Farmer, 10, raidEffects: ["gain" => ["num" => 5], ["steal" => ["num" => 2, "swap" => true]]], farmEffects: ["gain" => ["num" => 5]], wallEffects: ["gain" => ["num" => 5]], merchantEffects: ["gain" => ["num" => 5]]),
+            new Card("Florist", Types::Farmer, 10, raidEffects: ["gain" => ["num" => 5], "steal" => ["num" => 2, "swap" => true]], farmEffects: ["gain" => ["num" => 5]], wallEffects: ["gain" => ["num" => 5]], merchantEffects: ["gain" => ["num" => 5]]),
             new Card("Toll Bridge", Types::Wall, 11, raidEffects: ["steal" => ["num" => 2, "fromBank" => true]], merchantEffects: ["steal" => ["num" => 2, "fromBank" => true]], farmEffects: ["bank" => ["num" => 2]], wallEffects: ["bank" => ["num" => 2]]),
             new Card("Outlaw", Types::Raider, 12, farmEffects: ["steal" => ["num" => 5]], merchantEffects: ["steal" => ["num" => 4], "buyCard" => ["num" => 0]]),
             new Card("Veteran", Types::Raider, 13, farmEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]], merchantEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]]),
@@ -166,6 +166,14 @@ class Game extends \Bga\GameFramework\Table
                 $leftCard = array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($card) => array_values(array_merge($this->cards->getCardsInLocation("left", $id), $this->cards->getCardsInLocation("exhausted_left", $id)))[0]["type_arg"] == $card->getId()))[0]->getInfo($id);
                 $rightCard = array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($card) => array_values(array_merge($this->cards->getCardsInLocation("right", $id), $this->cards->getCardsInLocation("exhausted_right", $id)))[0]["type_arg"] == $card->getId()))[0]->getInfo($id);
             }
+            if ($id != $currentPlayerId && $this->getPlayersNumber() == 2 && count($this->cards->getCardsInLocation("left", $id)) > 0 && $this->gamestate->getCurrentMainStateId() != 10) {
+                $leftCard = new Card("hidden", Types::Farmer, -1)->getInfo($id);
+            } else if ($id != $currentPlayerId && $this->getPlayersNumber() == 2 && count($this->cards->getCardsInLocation("right", $id)) > 0 && !$this->globals->get("firstRound", true)) {
+                $rightCard = new Card("hidden", Types::Farmer, -1)->getInfo($id);
+            }
+            if ($id == $currentPlayerId && $this->getPlayersNumber() == 2 && !$this->globals->get("firstRound") && count($this->cards->getCardsInLocation("right", $id)) > 0) {
+                $rightCard = array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($card) => array_values(array_merge($this->cards->getCardsInLocation("right", $id), $this->cards->getCardsInLocation("exhausted_right", $id)))[0]["type_arg"] == $card->getId()))[0]->getInfo($id);
+            }
 
             $result["players"][$id]["left"] = $leftCard;
             $result["players"][$id]["right"] = $rightCard;
@@ -175,6 +183,8 @@ class Game extends \Bga\GameFramework\Table
         $result["hand"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->cards->getCardsInLocation("hand", $currentPlayerId)));
 
         $result["shop"] = array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->CARDS, $this->START_CARDS), fn($item) => $item->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->cards->getCardsInLocation("shop")));
+
+        $result["firstRound"] = $this->globals->get("firstRound", true);
 
         return $result;
     }

@@ -14,6 +14,7 @@ export interface VillagePillageGamedatas extends Gamedatas<VillagePillagePlayer>
     // Add here variables you set up in getAllDatas
     hand: Card[];
     shop: Card[];
+    firstRound: boolean;
 }
 
 export interface VillagePillageGame {

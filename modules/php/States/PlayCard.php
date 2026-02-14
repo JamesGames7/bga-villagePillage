@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\VillagePillageJames\States;
+namespace Bga\Games\VillagePillage\States;
 
 use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
-use Bga\Games\VillagePillageJames\Game;
+use Bga\Games\VillagePillage\Game;
 
 class PlayCard extends GameState
 {
@@ -43,12 +43,14 @@ class PlayCard extends GameState
     public function actChooseCards(int $leftId, int $rightId, int $currentPlayerId) {
         $possibleCards = $this->game->cards->getCardsInLocation("hand", $currentPlayerId);
 
-        $leftCard = array_values(array_filter($possibleCards, fn($card) => $card["type_arg"] == $leftId))[0];
-        $rightCard = array_values(array_filter($possibleCards, fn($card) => $card["type_arg"] == $rightId))[0];
+        $leftCard = array_values(array_filter($possibleCards, fn($card) => $card["type_arg"] == $leftId));
+        $rightCard = array_values(array_filter($possibleCards, fn($card) => $card["type_arg"] == $rightId));
 
-        if (count($leftCard) > 0 && count($rightCard) > 0) {
-            $this->game->cards->moveCard($leftCard["id"], "left", $currentPlayerId);
-            $this->game->cards->moveCard($rightCard["id"], "right", $currentPlayerId);
+        if (count($leftCard) > 0 && (count($rightCard) > 0 || ($this->game->getPlayersNumber() == 2 && !$this->globals->get("firstRound", true)))) {
+            $this->game->cards->moveCard($leftCard[0]["id"], "left", $currentPlayerId);
+            if (!($this->game->getPlayersNumber() == 2 && !$this->globals->get("firstRound", true))) {
+                $this->game->cards->moveCard($rightCard[0]["id"], "right", $currentPlayerId);
+            }
 
             $this->gamestate->setPlayerNonMultiactive($currentPlayerId, "");
         } else {

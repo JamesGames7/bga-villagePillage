@@ -2,7 +2,7 @@
 
 use Bga\GameFramework\GameState;
 use Bga\GameFramework\Notify;
-use Bga\Games\VillagePillageJames\Game;
+use Bga\Games\VillagePillage\Game;
 
 enum Types: string {
     case Raider = "Raider";

@@ -35,7 +35,7 @@
 }
 
 .player_area_name {
-  width: 400px;
+  width: 410px;
   display: flex;
   justify-content: center;
   position: relative;
@@ -46,6 +46,7 @@
   aspect-ratio: 495/504;
   background-image: url("img/turnip.png");
   background-size: 100% 100%;
+  filter: drop-shadow(1px 1px 1px black);
 }
 
 .turnip_wrap_0 {
@@ -180,4 +181,104 @@ mark.Wall {
 }
 mark.Farmer {
   background-color: #0ab20a;
+}
+
+.againstCard {
+  position: absolute;
+  height: 100px;
+  aspect-ratio: 482/719;
+  background-color: red;
+  top: 63px;
+  background-image: url("img/baseCards.jpg");
+  background-size: 700% 400%;
+  border-radius: 4px;
+}
+.againstCard.left {
+  left: 20px;
+}
+.againstCard.right {
+  right: 20px;
+}
+.againstCard {
+  opacity: 0.5;
+  transition: all 0.5s ease;
+}
+.againstCard:hover {
+  opacity: 1;
+}
+.againstCard.imgPos_0 {
+  background-position: 0% 0%;
+}
+.againstCard.imgPos_1 {
+  background-position: 0% -100%;
+}
+.againstCard.imgPos_2 {
+  background-position: 0% -200%;
+}
+.againstCard.imgPos_3 {
+  background-position: 0% -300%;
+}
+.againstCard.imgPos_4 {
+  background-position: -100% 0%;
+}
+.againstCard.imgPos_5 {
+  background-position: -100% -100%;
+}
+.againstCard.imgPos_6 {
+  background-position: -100% -200%;
+}
+.againstCard.imgPos_7 {
+  background-position: -100% -300%;
+}
+.againstCard.imgPos_8 {
+  background-position: -200% 0%;
+}
+.againstCard.imgPos_9 {
+  background-position: -200% -100%;
+}
+.againstCard.imgPos_10 {
+  background-position: -200% -200%;
+}
+.againstCard.imgPos_11 {
+  background-position: -200% -300%;
+}
+.againstCard.imgPos_12 {
+  background-position: -300% 0%;
+}
+.againstCard.imgPos_13 {
+  background-position: -300% -100%;
+}
+.againstCard.imgPos_14 {
+  background-position: -300% -200%;
+}
+.againstCard.imgPos_15 {
+  background-position: -300% -300%;
+}
+.againstCard.imgPos_16 {
+  background-position: -400% 0%;
+}
+.againstCard.imgPos_17 {
+  background-position: -400% -100%;
+}
+.againstCard.imgPos_18 {
+  background-position: -400% -200%;
+}
+.againstCard.imgPos_19 {
+  background-position: -400% -300%;
+}
+.againstCard.imgPos_20 {
+  background-position: -500% 0%;
+}
+.againstCard.imgPos_21 {
+  background-position: -500% -100%;
+}
+.againstCard.imgPos_22 {
+  background-position: -500% -200%;
+}
+.againstCard.imgPos_23 {
+  background-position: -500% -300%;
+}
+
+.hiddenImgPos {
+  opacity: 0 !important;
 }

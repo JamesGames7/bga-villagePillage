@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\VillagePillageJames\States;
+namespace Bga\Games\VillagePillage\States;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
-use Bga\Games\VillagePillageJames\Game;
+use Bga\Games\VillagePillage\Game;
 
 class RevealCard extends GameState
 {
@@ -34,20 +34,34 @@ class RevealCard extends GameState
 
     function onEnteringState() {
         // the code to run when entering the state
-        foreach ($this->game->loadPlayersBasicInfos() as $id => $data) {
-            $left = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("left", $id))[0]["type_arg"]))[0]->getInfo($id);
-            $right = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("right", $id))[0]["type_arg"]))[0]->getInfo($id);
+        if ($this->game->getPlayersNumber() > 2) {
+            foreach ($this->game->loadPlayersBasicInfos() as $id => $data) {
+                $left = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("left", $id))[0]["type_arg"]))[0]->getInfo($id);
+                $right = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("right", $id))[0]["type_arg"]))[0]->getInfo($id);
 
-            $this->notify->all("reveal", '${player_name} plays <mark class="${type_1}">${card_1}</mark> and <mark class="${type_2}">${card_2}</mark>', [
-                "left" => $left,
-                "right" => $right,
-                "player_name" => $data["player_name"],
-                "player_id" => $id,
-                "card_1" => $left["name"],
-                "card_2" => $right["name"],
-                "type_1" => $left["type"]->value,
-                "type_2" => $right["type"]->value,
-            ]);
+                $this->notify->all("reveal", '${player_name} plays <mark class="${type_1}">${card_1}</mark> and <mark class="${type_2}">${card_2}</mark>', [
+                    "left" => $left,
+                    "right" => $right,
+                    "player_name" => $data["player_name"],
+                    "player_id" => $id,
+                    "card_1" => $left["name"],
+                    "card_2" => $right["name"],
+                    "type_1" => $left["type"]->value,
+                    "type_2" => $right["type"]->value,
+                ]);
+            }
+        } else {
+            foreach ($this->game->loadPlayersBasicInfos() as $id => $data) {
+                $right = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getId() == array_values($this->game->cards->getCardsInLocation("right", $id))[0]["type_arg"]))[0]->getInfo($id);
+
+                $this->notify->all("reveal", '${player_name} plays a card and reveals <mark class="${type_2}">${card_2}</mark>', [
+                    "right" => $right,
+                    "player_name" => $data["player_name"],
+                    "player_id" => $id,
+                    "card_2" => $right["name"],
+                    "type_2" => $right["type"]->value,
+                ]);
+            }
         }
         return "";
     } 

@@ -40,7 +40,7 @@
 }
 
 .player_area_name {
-    width: 400px;
+    width: 410px;
     display: flex;
     justify-content: center;
     position: relative;
@@ -52,6 +52,8 @@
 
     background-image: url('img/turnip.png');
     background-size: 100% 100%;
+
+    filter: drop-shadow(1px 1px 1px black);
 }
 
 $left_pos: (128px, 82px, 130px, 82px, 128px);
@@ -167,4 +169,41 @@ mark {
     &.Farmer {
         background-color: #0ab20a;
     }
+}
+
+.againstCard {
+    position: absolute;
+    height: 100px;
+    aspect-ratio: 482 / 719;
+    background-color: red;
+    top: 63px;
+    background-image: url('img/baseCards.jpg');
+    background-size: 700% 400%;
+    border-radius: 4px;
+
+    &.left {
+        left: 20px;
+    }
+    &.right {
+        right: 20px;
+    }
+    opacity: 0.5;
+
+    transition: all 0.5s ease;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    @for $i from 0 to 24 {
+        $row: math.floor(calc($i / 4));
+        $col: $i % 4;
+        &.imgPos_#{$i} {
+            background-position: ($row * -100%) ($col * -100%);
+        }
+    }
+}
+
+.hiddenImgPos {
+    opacity: 0 !important;
 }

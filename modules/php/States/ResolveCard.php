@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\VillagePillageJames\States;
+namespace Bga\Games\VillagePillage\States;
 
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
-use Bga\Games\VillagePillageJames\Game;
+use Bga\Games\VillagePillage\Game;
 use Types;
-
-use function PHPSTORM_META\type;
 
 class ResolveCard extends GameState
 {
@@ -37,7 +35,7 @@ class ResolveCard extends GameState
             // optional
 			descriptionMyTurn: clienttranslate('${you} must choose a card to buy'),
             description: clienttranslate('Resolving card effects'),
-            transitions: ["next" => 10, "stay" => 20],
+            transitions: ["next" => 10, "stay" => 20, "end" => 98],
             updateGameProgression: false,
             initialPrivate: null,
         );
@@ -46,15 +44,24 @@ class ResolveCard extends GameState
     public function getArgs(): array
     {
         // the data sent to the front when entering the state
-        return ["choosingMerchant" => $this->globals->get("choosingMerchant", false)];
+        return [
+			"choosingMerchant" => $this->globals->get("choosingMerchant", false),
+			"playedCards" => array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"))
+		];
     } 
 
     function onEnteringState() {
         // the code to run when entering the state
+		$this->globals->set("firstRound", false);
+
 		$temp = $this->globals->get("cards");
 		if ($temp == null || $temp == []) {
 			$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
-			$this->cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
+			if ($this->game->getPlayersNumber() > 2) {
+				$this->cards = array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"));
+			} else {
+				$this->cards = array_values($this->game->cards->getCardsInLocation("right"));
+			}
 			$this->card_info = array_map(fn($card) => array_values(array_filter($this->allCards, fn($a) => $a->getId() == $card["type_arg"]))[0], array_values($this->cards));
 			$this->globals->set("cards", $this->cards);
 			$this->globals->set("stoppedCard", -1);
@@ -71,6 +78,13 @@ class ResolveCard extends GameState
 
         if ($this->doEffects($this->globals->get("stoppedCard")) == "done") {
 			$this->globals->set("cards", []);
+
+			foreach ($this->game->loadPlayersBasicInfos() as $id => $info) {
+				if ($this->bga->playerScore->get($id) == 3) {
+					return "end";
+				}
+			}
+
 			return "next";
 		}
     }   
@@ -108,8 +122,8 @@ class ResolveCard extends GameState
 			});
 			$this->globals->set("card_type", $type->value);
             $opp_nums = $this->game->getCollectionFromDB("SELECT `player_id`, `stockpile`, `bank` FROM `player`");
-            for ($i = 0; $i < $this->game->getPlayerCount() * 2; $i++) {
-				if ($i < $this->game->getPlayerCount() * 2 - 2 && $type == Types::Merchant
+            for ($i = 0; $i < (($this->game->getPlayersNumber() > 2) ? $this->game->getPlayerCount() * 2 : $this->game->getPlayerCount()); $i++) {
+				if ($i < $this->game->getPlayerCount() * 2 - 2 && $type == Types::Merchant && $this->game->getPlayersNumber() > 2
 					&& $toSort[$i]["player_id"] == $toSort[$i + 1]["player_id"]
 					&& $toSort[$i]["type"] == Types::Merchant
 					&& $toSort[$i + 1]["type"] == Types::Merchant) {
@@ -153,12 +167,19 @@ class ResolveCard extends GameState
         }
 
 		if ($this->run_effect) {
-			$this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
-			$this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
-			$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted", "hand");
+			if ($this->game->getPlayersNumber() > 2) {
+				$this->game->cards->moveAllCardsInLocationKeepOrder("left", "hand");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted", "hand");
 
-			$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_left", "exhausted");
-			$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_right", "exhausted");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_left", "exhausted");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_right", "exhausted");
+			} else {
+				$this->game->cards->moveAllCardsInLocationKeepOrder("right", "hand");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted", "hand");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("exhausted_right", "exhausted");
+				$this->game->cards->moveAllCardsInLocationKeepOrder("left", "right");
+			}
 
 			$this->notify->all("reset", 'Start of next round', [
 				array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->game->cards->getCardsInLocation("exhausted")))
@@ -238,8 +259,10 @@ class ResolveCard extends GameState
 		$curFn = $fnName[$opCardAgainst];
 
 		$opCardEffects = $opCard->$curFn(0, 0, 0, 0, 0, "", "");
+		
+		$curCardData = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getName() == $args["card_name"]))[0];
 
-		if (array_key_exists("steal", $opCardEffects) && $opponent_stock < $opCardEffects["steal"]["num"] + $num) {			
+		if (array_key_exists("steal", $opCardEffects) && $opponent_stock < $opCardEffects["steal"]["num"] + $num && $opCard->getType() == $curCardData->getType()) {			
 			$opStealNum = $opCardEffects["steal"]["num"];
 
 			if (!array_key_exists($opponent_id, $this->stealRemainder)) {
@@ -270,7 +293,7 @@ class ResolveCard extends GameState
 			$realNum = min($original, $stockSub + $opponent_bank);
 			$bankSub = $realNum - $stockSub;
 		} else {
-			$realNum = min($num, $opponent_stock);
+			$realNum = array_key_exists("swap", $args) ? $num : min($num, $opponent_stock);
 
 			$stockSub = $realNum;
 			$bankSub = 0;
@@ -366,12 +389,14 @@ class ResolveCard extends GameState
 				"stock_spent" => $stockpileSubtract,
 				"bank_spent" => $cost
 			]);
+
+			// TODO look into notif
+			$this->bga->playerScore->inc($player_id, 1);
 		} else {
 			foreach ($args["unable"] as $fn => $arg) {
 				$this->$fn(array_merge(["player_id" => $player_id], $arg, $args));
 			}
 		}
-		// TODO end game if necessary
 	}
 
     private function buyCard(array $args): void {

@@ -5,4 +5,5 @@ export interface Card {
     type: Types;
     id: number;
     player_id: string;
+    hidden?: boolean;
 }

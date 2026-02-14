@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\VillagePillageJames\States;
+namespace Bga\Games\VillagePillage\States;
 
 use Bga\GameFramework\StateType;
-use Bga\Games\VillagePillageJames\Game;
+use Bga\Games\VillagePillage\Game;
 
 const ST_END_GAME = 99;
 
@@ -28,6 +28,13 @@ class EndScore extends \Bga\GameFramework\States\GameState
      */
     public function onEnteringState() {
         // Here, we would compute scores if they are not updated live, and compute average statistics
+
+        foreach ($this->game->loadPlayersBasicInfos() as $id => $info) {
+            $this->bga->playerScoreAux->set($id, 
+            (intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $id")) + intval($this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $id"))) * 100
+            + $this->game->cards->countCardsInLocation("hand", $id) + $this->game->cards->countCardsInLocation("exhausted", $id)
+            );
+        }
 
         return ST_END_GAME;
     }

@@ -2,7 +2,7 @@ const BgaAnimations = await globalThis.importEsmLib('bga-animations', '1.x');
 const BgaCards = await globalThis.importEsmLib('bga-cards', '1.x');
 
 class CardsManager extends BgaCards.Manager {
-    constructor(game) {
+    constructor(game, player_num, player_id) {
         super({
             getId: (card) => card.player_id + "-" + card.id,
             setupDiv: (card, div) => {
@@ -25,7 +25,7 @@ class CardsManager extends BgaCards.Manager {
             cardBorderRadius: "4px",
             selectableCardStyle: { class: "selectable" },
             selectedCardStyle: { class: "selected" },
-            isCardVisible: () => true,
+            isCardVisible: (card) => !(card.name == "hidden" || card.hidden),
             animationManager: game.animationManager,
             cardWidth: 200,
             cardHeight: 298
@@ -43,18 +43,23 @@ var Types;
 
 class Game {
     constructor(bga) {
+        // TODO player panels
         this.animationManager = new BgaAnimations.Manager();
-        this.cardManager = new CardsManager(this);
+        this.cardManager = new CardsManager(this, () => this.player_num, () => this.player_id);
         this.leftRightStocks = {};
         this.exhaustedStocks = {};
         this.bga = bga;
     }
     setup(gamedatas) {
         this.gamedatas = gamedatas;
+        this.firstRound = gamedatas.firstRound;
         this.setupNotifications();
+        this.player_num = Object.keys(gamedatas.players).length;
         this.player_id = this.bga.players.getCurrentPlayerId();
         // @ts-ignore
         let playerOrder = gamedatas.playerorder;
+        // @ts-ignore
+        this.player_order = gamedatas.playerorder;
         while (gamedatas.playerorder[0] != this.player_id) {
             playerOrder.push(playerOrder.shift());
         }
@@ -63,11 +68,16 @@ class Game {
             $('game_play_area').insertAdjacentHTML("beforeend", /*html*/ `
                 <div id="player_area_${info.id}" class="player_area whiteblock">
                     <div class="player_names">
-                        <div id="opponent_name_${info.id}_0" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) - 1 + gamedatas.playerorder.length) % gamedatas.playerorder.length]).toString()))}</div>
+                        ${this.player_num != 2 ? `<div id="opponent_name_${info.id}_0" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) - 1 + gamedatas.playerorder.length) % gamedatas.playerorder.length]).toString()))}</div>
                         <div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}
                             <div id="exhausted_${info.id}" class="exhausted"></div>
                         </div>
-                        <div id="opponent_name_${info.id}_1" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) + 1) % gamedatas.playerorder.length]).toString()))}</div>
+                        <div id="opponent_name_${info.id}_1" class="opponent_name">${this.bga.players.getFormattedPlayerName(parseInt((gamedatas.playerorder[(gamedatas.playerorder.indexOf(parseInt(info.id.toString())) + 1) % gamedatas.playerorder.length]).toString()))}</div>` :
+                `<div id="player_area_name_${info.id}" class="player_area_name">${this.bga.players.getFormattedPlayerName(parseInt(info.id))}
+                            <div id="exhausted_${info.id}" class="exhausted"></div>
+                        </div>
+                        <div id="opponent_name_${info.id}_0" class="opponent_name"><strong>Next Round</strong></div>
+                        <div id="opponent_name_${info.id}_1" class="opponent_name"><strong>This Round</strong></div>`}
                     </div>
                     <div id="player_contents_${info.id}" class="player_contents">
                         <div id="bank_${info.id}" class="bank"></div>
@@ -90,7 +100,7 @@ class Game {
             for (let i = 0; i < parseInt(info.stockpile); i++) {
                 $(`stockpile_${info.id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_stockpile_${info.id}_${i}" class="turnip turnip_stockpile"></div>`);
             }
-            $(`player_contents_${info.id}`).insertAdjacentHTML("afterbegin", `<div id="left_card_${info.id}" class="left_card"></div>`);
+            $(`player_contents_${info.id}`).insertAdjacentHTML(this.player_num != 2 ? "afterbegin" : "beforeend", `<div id="left_card_${info.id}" class="left_card"></div>`);
             $(`player_contents_${info.id}`).insertAdjacentHTML("beforeend", `<div id="right_card_${info.id}" class="right_card"></div>`);
             this.leftRightStocks[info.id] = {
                 left: new BgaCards.SlotStock(this.cardManager, $(`left_card_${info.id}`), {
@@ -106,11 +116,13 @@ class Game {
             };
             if (info.left) {
                 this.leftRightStocks[info.id].left.addCard(info.left);
+            }
+            if (info.right) {
                 this.leftRightStocks[info.id].right.addCard(info.right);
             }
             this.exhaustedStocks[info.id] = new BgaCards.AllVisibleDeck(this.cardManager, $(`exhausted_${info.id}`), { horizontalShift: '0' });
             this.exhaustedStocks[info.id].addCards(info.exhausted);
-            this.voidStock = new BgaCards.VoidStock(this.cardManager, $(`overall_player_board_${this.player_id}`));
+            this.voidStock = new BgaCards.VoidStock(this.cardManager, this.bga.playerPanels.getElement(this.player_id));
         });
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
         this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), { sort: this.sortFunction });
@@ -119,7 +131,6 @@ class Game {
             let playerStocks = this.leftRightStocks[this.player_id];
             if (this.handStock.getSelection().length > 0) {
                 playerStocks.left.setSlotSelectionMode("single");
-                playerStocks.right.setSlotSelectionMode("single");
                 playerStocks.left.onSlotClick = async (slotId) => {
                     await this.handStock.addCards(playerStocks.left.getCards());
                     await playerStocks.left.addCard(this.handStock.getSelection()[0]);
@@ -129,17 +140,23 @@ class Game {
                     else {
                         $('confirm_button').disabled = true;
                     }
-                };
-                playerStocks.right.onSlotClick = async (slotId) => {
-                    await this.handStock.addCards(playerStocks.right.getCards());
-                    await playerStocks.right.addCard(this.handStock.getSelection()[0]);
-                    if (playerStocks.left.getCardCount() == 1) {
+                    if (this.player_num == 2 && !this.firstRound) {
                         $('confirm_button').disabled = false;
                     }
-                    else {
-                        $('confirm_button').disabled = true;
-                    }
                 };
+                if (this.player_num > 2 || this.firstRound) {
+                    playerStocks.right.setSlotSelectionMode("single");
+                    playerStocks.right.onSlotClick = async (slotId) => {
+                        await this.handStock.addCards(playerStocks.right.getCards());
+                        await playerStocks.right.addCard(this.handStock.getSelection()[0]);
+                        if (playerStocks.left.getCardCount() == 1) {
+                            $('confirm_button').disabled = false;
+                        }
+                        else {
+                            $('confirm_button').disabled = true;
+                        }
+                    };
+                }
             }
             else {
                 playerStocks.left.setSlotSelectionMode("none");
@@ -149,7 +166,7 @@ class Game {
             }
         };
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
-        this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction });
+        this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction, gap: '10px' });
         this.shopStock.addCards(gamedatas.shop);
         this.shopStock.onSelectionChange = (selection, lastChange) => {
             if ($('confirm_buy'))
@@ -160,7 +177,7 @@ class Game {
         let order = [Types.Farmer, Types.Wall, Types.Raider, Types.Merchant];
         return order.indexOf(a.type) - order.indexOf(b.type);
     }
-    onEnteringState(stateName, args) {
+    async onEnteringState(stateName, args) {
         switch (stateName) {
             case "PlayCard":
                 if (this.bga.players.isCurrentPlayerActive()) {
@@ -168,6 +185,21 @@ class Game {
                 }
                 break;
             case "ResolveCard":
+                if (this.player_num > 2 && document.querySelectorAll(".againstCard").length == 0) {
+                    args.args.playedCards.forEach(card => {
+                        let el = this.leftRightStocks[parseInt(card.location_arg)][card.location].element;
+                        let opId = card.location == "left"
+                            ? this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) - 1 + this.player_num) % this.player_num]
+                            : this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) + 1) % this.player_num];
+                        let opPos = parseInt(args.args.playedCards
+                            .filter(c => c.location_arg == opId.toString() && c.location != card.location)[0].type_arg);
+                        el.insertAdjacentHTML("beforeend", `
+                            <div class="againstCard ${card.location} imgPos_${opPos} hiddenImgPos"></div>
+                        `);
+                    });
+                    await new Promise(r => setTimeout(r, 1));
+                    document.querySelectorAll(".hiddenImgPos").forEach(c => c.classList.remove("hiddenImgPos"));
+                }
                 if (this.bga.players.isCurrentPlayerActive()) {
                     if (args.args.choosingMerchant) {
                         this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
@@ -219,7 +251,7 @@ class Game {
                     this.bga.statusBar.addActionButton("Confirm", () => {
                         this.bga.actions.performAction("actChooseCards", {
                             leftId: this.leftRightStocks[this.player_id].left.getCards()[0].id,
-                            rightId: this.leftRightStocks[this.player_id].right.getCards()[0].id
+                            rightId: (this.player_num != 2 || this.firstRound) ? this.leftRightStocks[this.player_id].right.getCards()[0].id : -1
                         });
                         this.handStock.setSelectionMode("none");
                     }, { disabled: true, id: "confirm_button" });
@@ -245,14 +277,31 @@ class Game {
         this.handStock.setSelectionMode("single");
     }
     async notif_reveal(args) {
-        await this.leftRightStocks[args.player_id].left.addCard(args.left, { fromElement: $(`overall_player_board_${args.player_id}`) });
-        await this.leftRightStocks[args.player_id].right.addCard(args.right, { fromElement: $(`overall_player_board_${args.player_id}`) });
+        if (this.player_num > 2) {
+            await this.leftRightStocks[args.player_id].left.addCard(args.left, { fromElement: this.bga.playerPanels.getElement(args.player_id) });
+            await this.leftRightStocks[args.player_id].right.addCard(args.right, { fromElement: this.bga.playerPanels.getElement(args.player_id) });
+        }
+        else {
+            if (args.player_id != this.player_id) {
+                if (this.firstRound) {
+                    await this.leftRightStocks[args.player_id].right.addCard(args.right, { fromElement: this.bga.playerPanels.getElement(args.player_id) });
+                }
+                else {
+                    await this.leftRightStocks[args.player_id].right.addCard(Object.assign(args.right, { hidden: true }), { duration: 0 });
+                    await this.leftRightStocks[args.player_id].right.removeCard({ id: -1, player_id: args.player_id.toString(), name: "hidden", type: Types.Farmer });
+                    await new Promise(r => setTimeout(r, 1));
+                    this.leftRightStocks[args.player_id].right.flipCard(args.right);
+                    await new Promise(r => setTimeout(r, 500));
+                }
+                await this.leftRightStocks[args.player_id].left.addCard({ id: -1, player_id: args.player_id.toString(), name: "hidden", type: Types.Farmer }, { fromElement: this.bga.playerPanels.getElement(args.player_id) });
+            }
+        }
     }
     async notif_gain(args) {
         let prevStock = $(`stockpile_${args.player_id}`).children.length;
         for (let i = prevStock; i < args.num + prevStock; i++) {
             $(`stockpile_${args.player_id}`).insertAdjacentHTML("beforeend", /*html*/ `<div id="turnip_stockpile_${args.player_id}_${i}" class="turnip turnip_stockpile"></div>`);
-            await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
+            await this.animationManager.slideIn($(`turnip_stockpile_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
         }
         await new Promise(r => setTimeout(r, 500));
     }
@@ -305,17 +354,17 @@ class Game {
         }
         let curStock = $(`stockpile_${args.player_id}`).children.length - 1;
         for (let i = 0; i < args.stock_spent; i++) {
-            await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${curStock - i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
+            await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${curStock - i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
         }
         let remainingBankSpent = args.bank_spent;
         for (let i = 4; i >= 0; i--) {
             if (remainingBankSpent > 0 && $(`turnip_wrap_${args.player_id}_${i}`).children.length > 0) {
-                await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
+                await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
                 remainingBankSpent--;
             }
         }
         await new Promise(r => setTimeout(r, 0)).then(() => $(`relic_bank_${args.player_id}_${num}`).classList.remove("hidden"));
-        await this.animationManager.slideIn($(`relic_bank_${args.player_id}_${num}`), $(`overall_player_board_${args.player_id}`), { duration: 500 });
+        await this.animationManager.slideIn($(`relic_bank_${args.player_id}_${num}`), this.bga.playerPanels.getElement(args.player_id), { duration: 500 });
         await new Promise(r => setTimeout(r, 500));
     }
     notif_buyCardStart(args = null) {
@@ -331,14 +380,14 @@ class Game {
             case "bank":
                 for (let i = 4; i >= 0; i--) {
                     if ($(`turnip_wrap_${args.player_id}_${i}`).children.length > 0 && numLeft > 0) {
-                        await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
+                        await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
                         numLeft--;
                     }
                 }
                 break;
             case "stockpile":
                 for (let i = 0; i < numLeft; i++) {
-                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${$(`stockpile_${args.player_id}`).children.length - 1}`), $(`overall_player_board_${args.player_id}`), { duration: 200 });
+                    await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${$(`stockpile_${args.player_id}`).children.length - 1}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
                 }
                 break;
         }
@@ -366,6 +415,12 @@ class Game {
         }
     }
     async notif_reset(args) {
+        if (this.player_num > 2) {
+            document.querySelectorAll(".againstCard").forEach(c => {
+                c.classList.add("hiddenImgPos");
+                console.log(c);
+            });
+        }
         for (let player_id of this.gamedatas.playerorder) {
             player_id = player_id.toString();
             if (player_id == this.player_id.toString()) {
@@ -377,15 +432,24 @@ class Game {
             let curArgs = args[0].filter(arg => arg.player_id == player_id);
             await this.exhaustedStocks[player_id].addCards(curArgs);
             if (player_id == this.player_id.toString()) {
-                await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
+                if (this.player_num > 2) {
+                    await this.handStock.addCards(this.leftRightStocks[player_id].left.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
+                }
                 await this.handStock.addCards(this.leftRightStocks[player_id].right.getCards().filter(card => !curArgs.map(arg => arg.id).includes(card.id)));
             }
             else {
-                await this.leftRightStocks[player_id].left.removeAll({ slideTo: $(`overall_player_board_${player_id}`) });
-                await this.leftRightStocks[player_id].right.removeAll({ slideTo: $(`overall_player_board_${player_id}`) });
+                if (this.player_num > 2) {
+                    await this.leftRightStocks[player_id].left.removeAll({ slideTo: this.bga.playerPanels.getElement(parseInt(player_id)) });
+                }
+                await this.leftRightStocks[player_id].right.removeAll({ slideTo: this.bga.playerPanels.getElement(parseInt(player_id)) });
+            }
+            if (this.player_num == 2) {
+                this.leftRightStocks[player_id].right.addCards(this.leftRightStocks[player_id].left.getCards());
             }
         }
         this.handStock.setSelectionMode("single");
+        this.firstRound = false;
+        document.querySelectorAll(".againstCard").forEach(c => c.remove());
         await new Promise(r => setTimeout(r, 500));
     }
     async notif_chooseMerchantStart(args) {

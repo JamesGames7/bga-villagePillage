@@ -3,7 +3,7 @@ import { Card } from "./docs/cards";
 import { VillagePillageGame } from "./docs/villagepillage";
 
 export class CardsManager extends BgaCards.Manager<Card> {
-    constructor (public game: VillagePillageGame) {
+    constructor (public game: VillagePillageGame, player_num: () => number, player_id: () => number) {
         super({
             getId: (card: Card) => card.player_id + "-" + card.id,
             setupDiv: (card: Card, div: HTMLElement) => {
@@ -30,7 +30,7 @@ export class CardsManager extends BgaCards.Manager<Card> {
             selectableCardStyle: {class: "selectable"},
             selectedCardStyle: {class: "selected"},
 
-            isCardVisible: () => true,
+            isCardVisible: (card) => !(card.name == "hidden" || card.hidden),
 
             animationManager: game.animationManager,
             cardWidth: 200,
