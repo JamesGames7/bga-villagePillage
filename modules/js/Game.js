@@ -41,6 +41,9 @@ var Types;
     Types["Merchant"] = "Merchant";
 })(Types || (Types = {}));
 
+// TODO translations
+// TODO check if deck is empty
+// FIXME buy cards marked incorrectly
 class Game {
     constructor(bga) {
         // TODO player panels
@@ -418,7 +421,6 @@ class Game {
         if (this.player_num > 2) {
             document.querySelectorAll(".againstCard").forEach(c => {
                 c.classList.add("hiddenImgPos");
-                console.log(c);
             });
         }
         for (let player_id of this.gamedatas.playerorder) {

@@ -120,7 +120,6 @@ class ResolveCard extends GameState
 				}
 				return $aTurnips - $bTurnips;
 			});
-			$this->globals->set("card_type", $type->value);
             $opp_nums = $this->game->getCollectionFromDB("SELECT `player_id`, `stockpile`, `bank` FROM `player`");
             for ($i = 0; $i < (($this->game->getPlayersNumber() > 2) ? $this->game->getPlayerCount() * 2 : $this->game->getPlayerCount()); $i++) {
 				if ($i < $this->game->getPlayerCount() * 2 - 2 && $type == Types::Merchant && $this->game->getPlayersNumber() > 2
@@ -142,9 +141,11 @@ class ResolveCard extends GameState
 				$card = $toSort[$i];
                 $card_deck = array_values(array_filter($this->cards, fn($c) => $c["type_arg"] == $card["id"] && $c["location_arg"] == $card["player_id"]))[0];
                 if ($card["type"] == $type) {
-					if ($this->run_effect && (($card_id != -1 && $type == Types::Merchant) || $card_id == -1)) {
+					// REVIEW removed  && (($card_id != -1 && $type == Types::Merchant) || $card_id == -1)
+					if ($this->run_effect) {
 						$this->globals->set("stoppedCard", intval($card_deck["id"]));
 						$this->globals->set("card_name", $card["name"]);
+						$this->globals->set("card_type", $type->value);
 						$player_id = $card_deck["location_arg"];
 						$opponent_id = $card_deck["location"] == "left" || $card_deck["location"] == "exhausted_left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
 						$opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . ($card_deck["location"] == "left" ? "right" : "left"), $opponent_id)))[0];
@@ -390,7 +391,6 @@ class ResolveCard extends GameState
 				"bank_spent" => $cost
 			]);
 
-			// TODO look into notif
 			$this->bga->playerScore->inc($player_id, 1);
 		} else {
 			foreach ($args["unable"] as $fn => $arg) {
@@ -400,11 +400,13 @@ class ResolveCard extends GameState
 	}
 
     private function buyCard(array $args): void {
-		$player_id = $args["player_id"];
-		$this->run_effect = false;
-		$this->globals->set("cost", $args["num"]);
-		$this->gamestate->setPlayersMultiactive([$player_id], "stay");
-		$this->notify->player($player_id, 'buyCardStart', '', []);
+		if ($this->game->cards->countCardsInLocation("shop") > 0) {
+			$player_id = $args["player_id"];
+			$this->run_effect = false;
+			$this->globals->set("cost", $args["num"]);
+			$this->gamestate->setPlayersMultiactive([$player_id], "stay");
+			$this->notify->player($player_id, 'buyCardStart', '', []);
+		}
     }
 
 	#[PossibleAction]
@@ -435,16 +437,18 @@ class ResolveCard extends GameState
 				"type_b" => $card["type"]->value
 			]);
 
-			$newCard = $this->game->cards->getCardOnTop("deck");
-			$this->game->cards->pickCardForLocation("deck", "shop");
+			if ($this->game->cards->countCardsInLocation("deck") > 0) {
+				$newCard = $this->game->cards->getCardOnTop("deck");
+				$this->game->cards->pickCardForLocation("deck", "shop");
 
-			$card = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0);
+				$card = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0);
 
-			$this->notify->all("drawNewShop", '<mark class="${type}">${card_name}</mark> enters the shop', [
-				"card" => $card,
-				"card_name" => $card["name"],
-				"type" => $card["type"]->value
-			]);
+				$this->notify->all("drawNewShop", '<mark class="${type}">${card_name}</mark> enters the shop', [
+					"card" => $card,
+					"card_name" => $card["name"],
+					"type" => $card["type"]->value
+				]);
+			}
 
 			$this->gamestate->setAllPlayersNonMultiactive("stay");
 		} else {

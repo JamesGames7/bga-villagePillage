@@ -78,6 +78,7 @@ class Game extends \Bga\GameFramework\Table
             new Card("Labyrinth", Types::Wall, 19, raidEffects: ["steal" => ["num" => 3], "exhaust" => []], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
             new Card("Pickler", Types::Farmer, 20, raidEffects: ["gain" => ["num" => 4]], farmEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]]),
             new Card("Miner", Types::Farmer, 21, wallEffects: ["gain" => ["num" => 5], "exhaust" => []], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
+            // FIXME - cathedral stopping immediately after effect (non raider)
             new Card("Cathedral", Types::Wall, 22, raidEffects: ["steal" => ["num" => 3], "bank" => ["num" => 1]], farmEffects: ["buyCard" => ["num" => 1]], wallEffects: ["buyCard" => ["num" => 1]], merchantEffects: ["buyCard" => ["num" => 1]]),
             new Card("Rat Catcher", Types::Farmer, 23, farmEffects: ["gain" => ["num" => 6]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
         ];  

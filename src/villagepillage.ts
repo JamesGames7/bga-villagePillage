@@ -4,6 +4,9 @@ import { Card } from "./docs/cards";
 import { Types } from "./cards";
 import { VillagePillageGame, VillagePillageGamedatas, VillagePillagePlayer } from "./docs/villagepillage";
 
+// TODO translations
+// TODO check if deck is empty
+// FIXME buy cards marked incorrectly
 export class Game implements VillagePillageGame {
     // TODO player panels
     public animationManager: InstanceType<typeof BgaAnimations.Manager> = new BgaAnimations.Manager();
@@ -443,7 +446,6 @@ export class Game implements VillagePillageGame {
         if (this.player_num > 2) {
             document.querySelectorAll(".againstCard").forEach(c => {
                 c.classList.add("hiddenImgPos")
-                console.log(c);
             });
         }
         for (let player_id of this.gamedatas.playerorder) {
