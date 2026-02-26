@@ -8,8 +8,8 @@ export class CardsManager extends BgaCards.Manager<Card> {
             getId: (card: Card) => card.player_id + "-" + card.id,
             setupDiv: (card: Card, div: HTMLElement) => {
                 div.dataset.id = card.id.toString();
-                div.dataset.type = card.type;
-                div.dataset.name = card.name;
+                div.dataset.type = _(card.type);
+                div.dataset.name = _(card.name);
             },
             setupFrontDiv: (card: Card, div: HTMLElement) => {
                 div.style.backgroundImage = `url(${g_gamethemeurl}img/baseCards.jpg)`;
@@ -18,7 +18,7 @@ export class CardsManager extends BgaCards.Manager<Card> {
                 div.style.backgroundPositionX = `-${Math.floor(card.id / 4)}00%`;
                 div.style.backgroundPositionY = `-${card.id % 4}00%`;
 
-                game.bga.gameui.addTooltipHtml(div.id, /*html*/`<strong>Name:</strong> ${card.name}<br><strong>Type:</strong> ${card.type}<br>`)
+                game.bga.gameui.addTooltipHtml(div.id, /*html*/`<strong>${_("Name")}:</strong> ${card.name}<br><strong>${_("Type")}:</strong> ${card.type}<br>`)
             },
             setupBackDiv: (card: Card, div: HTMLElement) => {
                 div.style.backgroundImage = `url(${g_gamethemeurl}img/baseCards.jpg)`;

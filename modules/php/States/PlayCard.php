@@ -54,7 +54,7 @@ class PlayCard extends GameState
 
             $this->gamestate->setPlayerNonMultiactive($currentPlayerId, "");
         } else {
-            throw new \BgaUserException("Not a valid card. Please submit a bug report.");
+            throw new \BgaUserException(clienttranslate("Not a valid card. Please submit a bug report."));
         }
     }
 

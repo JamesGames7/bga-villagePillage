@@ -7,15 +7,15 @@ class CardsManager extends BgaCards.Manager {
             getId: (card) => card.player_id + "-" + card.id,
             setupDiv: (card, div) => {
                 div.dataset.id = card.id.toString();
-                div.dataset.type = card.type;
-                div.dataset.name = card.name;
+                div.dataset.type = _(card.type);
+                div.dataset.name = _(card.name);
             },
             setupFrontDiv: (card, div) => {
                 div.style.backgroundImage = `url(${g_gamethemeurl}img/baseCards.jpg)`;
                 div.style.backgroundSize = `700% 400%`;
                 div.style.backgroundPositionX = `-${Math.floor(card.id / 4)}00%`;
                 div.style.backgroundPositionY = `-${card.id % 4}00%`;
-                game.bga.gameui.addTooltipHtml(div.id, /*html*/ `<strong>Name:</strong> ${card.name}<br><strong>Type:</strong> ${card.type}<br>`);
+                game.bga.gameui.addTooltipHtml(div.id, /*html*/ `<strong>${_("Name")}:</strong> ${card.name}<br><strong>${_("Type")}:</strong> ${card.type}<br>`);
             },
             setupBackDiv: (card, div) => {
                 div.style.backgroundImage = `url(${g_gamethemeurl}img/baseCards.jpg)`;
@@ -41,9 +41,6 @@ var Types;
     Types["Merchant"] = "Merchant";
 })(Types || (Types = {}));
 
-// TODO translations
-// TODO check if deck is empty
-// FIXME buy cards marked incorrectly
 class Game {
     constructor(bga) {
         // TODO player panels
@@ -205,7 +202,7 @@ class Game {
                 }
                 if (this.bga.players.isCurrentPlayerActive()) {
                     if (args.args.choosingMerchant) {
-                        this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
+                        this.bga.statusBar.setTitle(_("${you} must choose which merchant to activate first"));
                         this.leftRightStocks[this.player_id].left.setSelectionMode("single");
                         this.leftRightStocks[this.player_id].right.setSelectionMode("single");
                         this.leftRightStocks[this.player_id].left.onSelectionChange = (selection, lastChange) => {
@@ -345,13 +342,13 @@ class Game {
     async notif_relic(args) {
         let num;
         switch (args.num) {
-            case "first":
+            case _("first"):
                 num = 0;
                 break;
-            case "second":
+            case _("second"):
                 num = 1;
                 break;
-            case "third":
+            case _("third"):
                 num = 2;
                 break;
         }
@@ -455,7 +452,7 @@ class Game {
         await new Promise(r => setTimeout(r, 500));
     }
     async notif_chooseMerchantStart(args) {
-        this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
+        this.bga.statusBar.setTitle(_("${you} must choose which merchant to activate first"));
         this.leftRightStocks[this.player_id].left.setSelectionMode("single");
         this.leftRightStocks[this.player_id].right.setSelectionMode("single");
         this.leftRightStocks[this.player_id].left.onSelectionChange = (selection, lastChange) => {

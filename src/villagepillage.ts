@@ -4,9 +4,6 @@ import { Card } from "./docs/cards";
 import { Types } from "./cards";
 import { VillagePillageGame, VillagePillageGamedatas, VillagePillagePlayer } from "./docs/villagepillage";
 
-// TODO translations
-// TODO check if deck is empty
-// FIXME buy cards marked incorrectly
 export class Game implements VillagePillageGame {
     // TODO player panels
     public animationManager: InstanceType<typeof BgaAnimations.Manager> = new BgaAnimations.Manager();
@@ -212,7 +209,7 @@ export class Game implements VillagePillageGame {
 
                 if (this.bga.players.isCurrentPlayerActive()) {
                     if (args.args.choosingMerchant) {
-                        this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
+                        this.bga.statusBar.setTitle(_("${you} must choose which merchant to activate first"));
                         this.leftRightStocks[this.player_id].left.setSelectionMode("single");
                         this.leftRightStocks[this.player_id].right.setSelectionMode("single");
 
@@ -362,13 +359,13 @@ export class Game implements VillagePillageGame {
     public async notif_relic(args: {player_id: number, num: "first" | "second" | "third", stock_spent: number, bank_spent: number}) {
         let num: number;
         switch (args.num) {
-            case "first":
+            case _("first"):
                 num = 0;
                 break;
-            case "second":
+            case _("second"):
                 num = 1;
                 break;
-            case "third":
+            case _("third"):
                 num = 2;
                 break;
         }
@@ -479,7 +476,7 @@ export class Game implements VillagePillageGame {
     }
 
     public async notif_chooseMerchantStart(args: any) {
-        this.bga.statusBar.setTitle("${you} must choose which merchant to activate first");
+        this.bga.statusBar.setTitle(_("${you} must choose which merchant to activate first"));
 
         this.leftRightStocks[this.player_id].left.setSelectionMode("single");
         this.leftRightStocks[this.player_id].right.setSelectionMode("single");

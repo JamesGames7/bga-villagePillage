@@ -141,13 +141,15 @@ class ResolveCard extends GameState
 				$card = $toSort[$i];
                 $card_deck = array_values(array_filter($this->cards, fn($c) => $c["type_arg"] == $card["id"] && $c["location_arg"] == $card["player_id"]))[0];
                 if ($card["type"] == $type) {
-					// REVIEW removed  && (($card_id != -1 && $type == Types::Merchant) || $card_id == -1)
 					if ($this->run_effect) {
 						$this->globals->set("stoppedCard", intval($card_deck["id"]));
 						$this->globals->set("card_name", $card["name"]);
 						$this->globals->set("card_type", $type->value);
 						$player_id = $card_deck["location_arg"];
 						$opponent_id = $card_deck["location"] == "left" || $card_deck["location"] == "exhausted_left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
+						if ($this->game->getPlayersNumber() == 2) {
+							$opponent_id = $this->game->getPlayerAfter($player_id);
+						}
 						$opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . ($card_deck["location"] == "left" ? "right" : "left"), $opponent_id)))[0];
 						$opp_card = array_values(array_filter($this->allCards, fn($c) => $c->getId() == $opp_card_deck["type_arg"]))[0];
 						
@@ -182,7 +184,7 @@ class ResolveCard extends GameState
 				$this->game->cards->moveAllCardsInLocationKeepOrder("left", "right");
 			}
 
-			$this->notify->all("reset", 'Start of next round', [
+			$this->notify->all("reset", clienttranslate('Start of next round'), [
 				array_values(array_map(fn($card) => array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["type_arg"]))[0]->getInfo($card["location_arg"]), $this->game->cards->getCardsInLocation("exhausted")))
 			]);
 
@@ -201,13 +203,13 @@ class ResolveCard extends GameState
 
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` + $num WHERE `player_id` = $player_id");
 
-        $this->notify->all("gain", '${player_name} gains ${num} turnip${plural} using <mark class="${type}">${card_name}</mark>', [
+        $this->notify->all("gain", clienttranslate('${player_name} gains ${num} ${plural} using <mark class="${type}">${card_name}</mark>'), [
 			"type" => $this->globals->get("card_type"),
             "player_id" => $player_id,
             "player_name" => $this->game->getPlayerNameById($player_id),
             "num" => $num,
             "card_name" => $args["card_name"],
-            "plural" => $num == 1 ? "" : "s"
+            "plural" => $num == 1 ? clienttranslate("turnip") : clienttranslate("turnips")
         ]);
     }
 
@@ -223,13 +225,13 @@ class ResolveCard extends GameState
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` - $realNum WHERE `player_id` = $player_id");
         $this->game->DbQuery("UPDATE `player` SET `bank` = `bank` + $realNum WHERE `player_id` = $player_id");
 
-        $this->notify->all("bank", '${player_name} banks ${num} turnip${plural} using <mark class="${type}">${card_name}</mark>', [
+        $this->notify->all("bank", clienttranslate('${player_name} banks ${num} ${plural} using <mark class="${type}">${card_name}</mark>'), [
 			"type" => $this->globals->get("card_type"),
             "player_id" => $player_id,
             "player_name" => $this->game->getPlayerNameById($player_id),
             "num" => $realNum,
             "card_name" => $args["card_name"],
-            "plural" => $realNum == 1 ? "" : "s"
+            "plural" => $realNum == 1 ? clienttranslate("turnip") : clienttranslate("turnips")
         ]);
     }
 
@@ -304,7 +306,7 @@ class ResolveCard extends GameState
         $this->game->DbQuery("UPDATE `player` SET `bank` = `bank` - $bankSub WHERE `player_id` = $opponent_id");
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` + $realNum WHERE `player_id` = $player_id");
 
-        $this->notify->all("steal", '${player_name1} steals ${num} turnip${plural} from ${player_name2} using <mark class="${type}">${card_name}</mark>', [
+        $this->notify->all("steal", clienttranslate('${player_name1} steals ${num} ${plural} from ${player_name2} using <mark class="${type}">${card_name}</mark>'), [
 			"type" => $this->globals->get("card_type"),
             "player_id1" => $player_id,
             "player_name1" => $this->game->getPlayerNameById($player_id),
@@ -312,7 +314,7 @@ class ResolveCard extends GameState
             "player_name2" => $this->game->getPlayerNameById($opponent_id),
             "num" => $realNum,
             "card_name" => $args["card_name"],
-            "plural" => $realNum == 1 ? "" : "s",
+            "plural" => $realNum == 1 ? clienttranslate("turnip") : clienttranslate("turnips"),
 			"stock" => $stockSub,
 			"bank" => $bankSub
         ]);
@@ -330,7 +332,7 @@ class ResolveCard extends GameState
 		if (array_key_exists("swap", $args) && $args["swap"]) {
 			$this->game->cards->moveAllCardsInLocation($side == "left" ? "right" : "left", "exhausted_" . ($side == "left" ? "right" : "left"), $player_id, $player_id);
 
-			$this->notify->all("exhaust", '${player_name1} exhausts <mark class="${type}">${card_name}</mark> using <mark class="${type}">${card_name}</mark>', [
+			$this->notify->all("exhaust", clienttranslate('${player_name1} exhausts <mark class="${type}">${card_name}</mark> using <mark class="${type}">${card_name}</mark>'), [
 				"type" => $this->globals->get("card_type"),
 				"player_id1" => $player_id,
 				"player_name1" => $this->game->getPlayerNameById($player_id),
@@ -339,7 +341,7 @@ class ResolveCard extends GameState
 		} else {
 			$this->game->cards->moveCard($exhausted_card_id, "exhausted_" . $side, $opponent_id);
 
-			$this->notify->all("exhaust", '${player_name1} exhausts ${player_name2}\'s <mark class="${type_op}">${op_card}</mark> using <mark class="${type}">${card_name}</mark>', [
+			$this->notify->all("exhaust", clienttranslate('${player_name1} exhausts ${player_name2}\'s <mark class="${type_op}">${op_card}</mark> using <mark class="${type}">${card_name}</mark>'), [
 				"type" => $this->globals->get("card_type"),
 				"type_op" => $type_op,
 				"player_id1" => $player_id,
@@ -361,18 +363,18 @@ class ResolveCard extends GameState
 		switch ($relics) {
 			case 0:
 				$cost = 8;
-				$relics = "first";
+				$relics = clienttranslate("first");
 				break;
 			case 1:
 				$cost = 9;
-				$relics = "second";
+				$relics = clienttranslate("second");
 				break;
 			case 2:
 				$cost = 10;
-				$relics = "third";
+				$relics = clienttranslate("third");
 				break;
 			default:
-				throw new \BgaUserException("Error, please submit a bug report titled 'buy relic error'");
+				throw new \BgaUserException(clienttranslate("Error, please submit a bug report titled 'buy relic error'"));
 		}
 
 		if ($bank + $stockpile >= $cost) {
@@ -381,7 +383,7 @@ class ResolveCard extends GameState
 
 			$this->game->DbQuery("UPDATE `player` SET `relics` = `relics` + 1, `stockpile` = `stockpile` - $stockpileSubtract, `bank` = `bank` - $cost WHERE `player_id` = $player_id");
 
-			$this->notify->all("relic", '${player_name} bought their ${num} relic using <mark class="${type}">${card_name}</mark>', [
+			$this->notify->all("relic", clienttranslate('${player_name} bought their ${num} relic using <mark class="${type}">${card_name}</mark>'), [
 				"type" => $this->globals->get("card_type"),
 				"player_name" => $this->game->getPlayerNameById($player_id),
 				"player_id" => $player_id,
@@ -424,13 +426,13 @@ class ResolveCard extends GameState
 			$this->game->DbQuery("UPDATE `player` SET `$updatePlace` = `$updatePlace` - $cost WHERE `player_id` = $currentPlayerId");
 			$card = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $id))[0]->getInfo(0);
 
-			$this->notify->all("buyCard", '${player_name} bought <mark class="${type_b}">${bought_card}</mark> for ${num} turnip${plural} using <mark class="${type}">${card_name}</mark>', [
+			$this->notify->all("buyCard", clienttranslate('${player_name} bought <mark class="${type_b}">${bought_card}</mark> for ${num} ${plural} using <mark class="${type}">${card_name}</mark>'), [
 				"type" => $this->globals->get("card_type"),
 				"player_name" => $this->game->getPlayerNameById($currentPlayerId),
 				"player_id" => $currentPlayerId,
 				"num" => $cost,
 				"updatePlace" => $updatePlace,
-				"plural" => $cost == 1 ? "" : "s",
+				"plural" => $cost == 1 ? clienttranslate("turnip") : clienttranslate("turnips"),
 				"bought_card" => array_values($boughtCard)[0]["type"],
 				"card_name" => $this->globals->get("card_name"),
 				"card" => $card,
@@ -443,7 +445,7 @@ class ResolveCard extends GameState
 
 				$card = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0);
 
-				$this->notify->all("drawNewShop", '<mark class="${type}">${card_name}</mark> enters the shop', [
+				$this->notify->all("drawNewShop", clienttranslate('<mark class="${type}">${card_name}</mark> enters the shop'), [
 					"card" => $card,
 					"card_name" => $card["name"],
 					"type" => $card["type"]->value
@@ -452,34 +454,36 @@ class ResolveCard extends GameState
 
 			$this->gamestate->setAllPlayersNonMultiactive("stay");
 		} else {
-			throw new \BgaUserException("Not a valid card choice.");
+			throw new \BgaUserException(clienttranslate("Not a valid card choice."));
 		}
 	}
 
 	private function drawCard(array $args): void {
-		$player_id = $args["player_id"];
+		if ($this->game->cards->countCardsInLocation("deck") > 0) {
+			$newCard = $this->game->cards->getCardOnTop("deck");
 
-		$newCard = $this->game->cards->getCardOnTop("deck");
+			$player_id = $args["player_id"];
 
-		$this->game->cards->pickCardForLocation("deck", "hand", $player_id);
+			$this->game->cards->pickCardForLocation("deck", "hand", $player_id);
 
-		$new = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0);
+			$new = array_values(array_filter($this->game->CARDS, fn($card) => $card->getId() == $newCard["type_arg"]))[0]->getInfo(0);
 
-		$this->notify->all("drawCard", '${player_name} draws a card using <mark class="${type}">${card_name}</mark>', [
-			"type" => $this->globals->get("card_type"),
-			"player_name" => $this->game->getPlayerNameById($player_id),
-			"player_id" => $player_id,
+			$this->notify->all("drawCard", clienttranslate('${player_name} draws a card using <mark class="${type}">${card_name}</mark>'), [
+				"type" => $this->globals->get("card_type"),
+				"player_name" => $this->game->getPlayerNameById($player_id),
+				"player_id" => $player_id,
 
-			"card_name" => $args["card_name"],
+				"card_name" => $args["card_name"],
 
-			"_private" => [
-				$player_id => new NotificationMessage('${player_name} draws <mark class="${_private.type_new}">${_private.new_card_name}</mark> using <mark class="${type}">${card_name}</mark>', [
-					"new_card_name" => $newCard["type"],
-					"new_card" => $new,
-					"type_new" => $new["type"]->value
-				])
-			]
-		]);
+				"_private" => [
+					$player_id => new NotificationMessage(clienttranslate('${player_name} draws <mark class="${_private.type_new}">${_private.new_card_name}</mark> using <mark class="${type}">${card_name}</mark>'), [
+						"new_card_name" => $newCard["type"],
+						"new_card" => $new,
+						"type_new" => $new["type"]->value
+					])
+				]
+			]);
+		}
 	}
 
 	private function chooseMerchant(int $player_id) {

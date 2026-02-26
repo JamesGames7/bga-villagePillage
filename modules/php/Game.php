@@ -34,9 +34,6 @@ class Game extends \Bga\GameFramework\Table
      *
      * Here, you can assign labels to global variables you are using for this game. You can use any number of global
      * variables with IDs between 10 and 99. If you want to store any type instead of int, use $this->globals instead.
-     *
-     * NOTE: afterward, you can get/set the global variables with `getGameStateValue`, `setGameStateInitialValue` or
-     * `setGameStateValue` functions.
      */
     public function __construct()
     {
@@ -60,33 +57,32 @@ class Game extends \Bga\GameFramework\Table
         });*/
 
         $this->CARDS =  [
-            new Card("Cutpurse", Types::Raider, 2, farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]], raidEffects: ["steal" => ["num" => 1, "swap" => true]]),
-            new Card("Doctor", Types::Merchant, 3, ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]]),
-            new Card("Dungeon", Types::Wall, 5, wallEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
-            new Card("Bard", Types::Merchant, 6, ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]]),
-            new Card("Moat", Types::Wall, 7, raidEffects: ["gain" => ["num" => 2], "steal" => ["num" => 3]], wallEffects: ["bank" => ["num" => 2]], merchantEffects: ["bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1, "swap" => true]]),
-            new Card("Berserker", Types::Raider, 9, wallEffects: ["steal" => ["num" => 1, "swap" => true]], farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]]),
-            new Card("Florist", Types::Farmer, 10, raidEffects: ["gain" => ["num" => 5], "steal" => ["num" => 2, "swap" => true]], farmEffects: ["gain" => ["num" => 5]], wallEffects: ["gain" => ["num" => 5]], merchantEffects: ["gain" => ["num" => 5]]),
-            new Card("Toll Bridge", Types::Wall, 11, raidEffects: ["steal" => ["num" => 2, "fromBank" => true]], merchantEffects: ["steal" => ["num" => 2, "fromBank" => true]], farmEffects: ["bank" => ["num" => 2]], wallEffects: ["bank" => ["num" => 2]]),
-            new Card("Outlaw", Types::Raider, 12, farmEffects: ["steal" => ["num" => 5]], merchantEffects: ["steal" => ["num" => 4], "buyCard" => ["num" => 0]]),
-            new Card("Veteran", Types::Raider, 13, farmEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]], merchantEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]]),
-            new Card("Mason", Types::Farmer, 14, wallEffects: ["gain" => ["num" => 4], "steal" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
-            new Card("Treasury", Types::Wall, 15, raidEffects: ["steal" => ["num" => 2], "bank" => ["num" => 4]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]]),
-            new Card("Burglar", Types::Raider, 16, farmEffects: ["steal" => ["num" => 4, "fromBank" => true]], merchantEffects: ["steal" => ["num" => 4, "fromBank" => true]]),
-            new Card("Trapper", Types::Raider, 17, farmEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], merchantEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1]]),
-            new Card("Innkeeper", Types::Farmer, 18, merchantEffects: ["gain" => ["num" => 5], "buyCard" => ["num" => 0]], farmEffects: ["gain" => ["num" => 4]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]]),
-            new Card("Labyrinth", Types::Wall, 19, raidEffects: ["steal" => ["num" => 3], "exhaust" => []], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
-            new Card("Pickler", Types::Farmer, 20, raidEffects: ["gain" => ["num" => 4]], farmEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]]),
-            new Card("Miner", Types::Farmer, 21, wallEffects: ["gain" => ["num" => 5], "exhaust" => []], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
-            // FIXME - cathedral stopping immediately after effect (non raider)
-            new Card("Cathedral", Types::Wall, 22, raidEffects: ["steal" => ["num" => 3], "bank" => ["num" => 1]], farmEffects: ["buyCard" => ["num" => 1]], wallEffects: ["buyCard" => ["num" => 1]], merchantEffects: ["buyCard" => ["num" => 1]]),
-            new Card("Rat Catcher", Types::Farmer, 23, farmEffects: ["gain" => ["num" => 6]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
+            new Card(clienttranslate("Cutpurse"), Types::Raider, 2, farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]], raidEffects: ["steal" => ["num" => 1, "swap" => true]]),
+            new Card(clienttranslate("Doctor"), Types::Merchant, 3, ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 2], "exhaust" => []]]]),
+            new Card(clienttranslate("Dungeon"), Types::Wall, 5, wallEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["gain" => ["num" => 1], "steal" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
+            new Card(clienttranslate("Bard"), Types::Merchant, 6, ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]], ["buyRelic" => ["unable" => ["gain" => ["num" => 1], "drawCard" => []]]]),
+            new Card(clienttranslate("Moat"), Types::Wall, 7, raidEffects: ["gain" => ["num" => 2], "steal" => ["num" => 3]], wallEffects: ["bank" => ["num" => 2]], merchantEffects: ["bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 1, "swap" => true]]),
+            new Card(clienttranslate("Berserker"), Types::Raider, 9, wallEffects: ["steal" => ["num" => 1, "swap" => true]], farmEffects: ["steal" => ["num" => 6]], merchantEffects: ["steal" => ["num" => 6]]),
+            new Card(clienttranslate("Florist"), Types::Farmer, 10, raidEffects: ["gain" => ["num" => 5], "steal" => ["num" => 2, "swap" => true]], farmEffects: ["gain" => ["num" => 5]], wallEffects: ["gain" => ["num" => 5]], merchantEffects: ["gain" => ["num" => 5]]),
+            new Card(clienttranslate("Toll Bridge"), Types::Wall, 11, raidEffects: ["steal" => ["num" => 2, "fromBank" => true]], merchantEffects: ["steal" => ["num" => 2, "fromBank" => true]], farmEffects: ["bank" => ["num" => 2]], wallEffects: ["bank" => ["num" => 2]]),
+            new Card(clienttranslate("Outlaw"), Types::Raider, 12, farmEffects: ["steal" => ["num" => 5]], merchantEffects: ["steal" => ["num" => 4], "buyCard" => ["num" => 0]]),
+            new Card(clienttranslate("Veteran"), Types::Raider, 13, farmEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]], merchantEffects: ["steal" => ["num" => 6], "exhaust" => ["swap" => true]]),
+            new Card(clienttranslate("Mason"), Types::Farmer, 14, wallEffects: ["gain" => ["num" => 4], "steal" => ["num" => 1], "bank" => ["num" => 2]], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
+            new Card(clienttranslate("Treasury"), Types::Wall, 15, raidEffects: ["steal" => ["num" => 2], "bank" => ["num" => 4]], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 4]]),
+            new Card(clienttranslate("Burglar"), Types::Raider, 16, farmEffects: ["steal" => ["num" => 4, "fromBank" => true]], merchantEffects: ["steal" => ["num" => 4, "fromBank" => true]]),
+            new Card(clienttranslate("Trapper"), Types::Raider, 17, farmEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], merchantEffects: ["steal" => ["num" => 4], "gain" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1]]),
+            new Card(clienttranslate("Innkeeper"), Types::Farmer, 18, merchantEffects: ["gain" => ["num" => 5], "buyCard" => ["num" => 0]], farmEffects: ["gain" => ["num" => 4]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]]),
+            new Card(clienttranslate("Labyrinth"), Types::Wall, 19, raidEffects: ["steal" => ["num" => 3], "exhaust" => []], farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 2]]),
+            new Card(clienttranslate("Pickler"), Types::Farmer, 20, raidEffects: ["gain" => ["num" => 4]], farmEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], wallEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]], merchantEffects: ["gain" => ["num" => 4], "bank" => ["num" => 2]]),
+            new Card(clienttranslate("Miner"), Types::Farmer, 21, wallEffects: ["gain" => ["num" => 5], "exhaust" => []], farmEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
+            new Card(clienttranslate("Cathedral"), Types::Wall, 22, raidEffects: ["steal" => ["num" => 3], "bank" => ["num" => 1]], farmEffects: ["buyCard" => ["num" => 1]], wallEffects: ["buyCard" => ["num" => 1]], merchantEffects: ["buyCard" => ["num" => 1]]),
+            new Card(clienttranslate("Rat Catcher"), Types::Farmer, 23, farmEffects: ["gain" => ["num" => 6]], wallEffects: ["gain" => ["num" => 4]], raidEffects: ["gain" => ["num" => 4]], merchantEffects: ["gain" => ["num" => 4]]),
         ];  
         $this->START_CARDS = [
-            new Card("Farmer", Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
-            new Card("Merchant", Types::Merchant, 1, ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]]),
-            new Card("Wall", Types::Wall, 4, farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1], "bank" => ["num" => 1]]),
-            new Card("Raider", Types::Raider, 8, farmEffects: ["steal" => ["num" => 4]], merchantEffects: ["steal" => ["num" => 4]]),
+            new Card(clienttranslate("Farmer"), Types::Farmer, 0, ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]], ["gain" => ["num" => 3]]),
+            new Card(clienttranslate("Merchant"), Types::Merchant, 1, ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]], ["buyRelic" => ["unable" => ["buyCard" => ["num" => 1]]]]),
+            new Card(clienttranslate("Wall"), Types::Wall, 4, farmEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], wallEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], merchantEffects: ["gain" => ["num" => 1], "bank" => ["num" => 1]], raidEffects: ["steal" => ["num" => 1], "bank" => ["num" => 1]]),
+            new Card(clienttranslate("Raider"), Types::Raider, 8, farmEffects: ["steal" => ["num" => 4]], merchantEffects: ["steal" => ["num" => 4]]),
         ];
 
         $this->cards = $this->deckFactory->createDeck("card");
@@ -106,7 +102,9 @@ class Game extends \Bga\GameFramework\Table
     {
         // TODO: compute and return the game progression
 
-        return 0;
+        $relics = max(array_map(fn($data) => intval($data["relics"]), $this->getCollectionFromDB("SELECT `player_id`, `relics` FROM `player`")));
+
+        return $relics * 100 / 3;
     }
 
     /**
@@ -153,7 +151,6 @@ class Game extends \Bga\GameFramework\Table
         // WARNING: We must only return information visible by the current player (using $currentPlayerId).
 
         // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
 
         $result["players"] = $this->getCollectionFromDb(
             "SELECT `player_id` `id`, `player_score` `score`, `stockpile`, `bank`, `relics` FROM `player`"
@@ -213,9 +210,6 @@ class Game extends \Bga\GameFramework\Table
         }
 
         // Create players based on generic information.
-        //
-        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
-        // additional fields directly here.
         static::DbQuery(
             sprintf(
                 "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
