@@ -7,6 +7,9 @@
   background-position: -600% -200%;
   position: relative;
 }
+.bank.p2 {
+  background-position: -600% -100%;
+}
 
 .player_contents {
   display: flex;
@@ -51,37 +54,62 @@
 
 .turnip_wrap_0 {
   position: absolute;
-  top: 60px;
+  top: 67px;
   left: 128px;
   background: none !important;
+  filter: none;
+}
+.turnip_wrap_0.p2 {
+  left: 83px;
+  top: 67px;
 }
 
 .turnip_wrap_1 {
   position: absolute;
-  top: 89.5px;
+  top: 96.5px;
   left: 82px;
   background: none !important;
+  filter: none;
+}
+.turnip_wrap_1.p2 {
+  left: 128px;
+  top: 102.67px;
 }
 
 .turnip_wrap_2 {
   position: absolute;
-  top: 119px;
+  top: 126px;
   left: 130px;
   background: none !important;
+  filter: none;
+}
+.turnip_wrap_2.p2 {
+  left: 84px;
+  top: 138.34px;
 }
 
 .turnip_wrap_3 {
   position: absolute;
-  top: 148.5px;
+  top: 155.5px;
   left: 82px;
   background: none !important;
+  filter: none;
+}
+.turnip_wrap_3.p2 {
+  left: 128px;
+  top: 174.01px;
 }
 
 .turnip_wrap_4 {
   position: absolute;
-  top: 178px;
+  top: 185px;
   left: 128px;
   background: none !important;
+  filter: none;
+}
+.turnip_wrap_4.p2 {
+  left: 0px;
+  top: 209.68px;
 }
 
 .relic {

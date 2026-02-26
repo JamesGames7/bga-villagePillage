@@ -8,9 +8,13 @@
 
     background-image: url('img/baseCards.jpg');
     background-size: 700% 400%;
-    // TODO allow 2 players
+    // TODO fix turnips for 2p bank card
     background-position: -600% -200%;
     position: relative;
+
+    &.p2 {
+        background-position: -600% -100%;
+    }
 }
 
 .player_contents {
@@ -57,13 +61,20 @@
 }
 
 $left_pos: (128px, 82px, 130px, 82px, 128px);
+$p2_left_pos: (83px, 128px, 84px, 128px, 0px);
 
 @for $i from 0 through 4 {
     .turnip_wrap_#{$i} {
         position: absolute;
-        top: calc($i * 29.5px + 60px);
+        top: calc($i * 29.5px + 67px);
         left: list.nth($left_pos, $i + 1);
         background: none !important;
+        filter: none;
+
+        &.p2 {
+            left: list.nth($p2_left_pos, $i + 1);
+            top: calc($i * 35.67px + 67px);
+        }
     }
 }
 

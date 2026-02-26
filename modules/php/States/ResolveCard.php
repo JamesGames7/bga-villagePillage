@@ -220,7 +220,7 @@ class ResolveCard extends GameState
         $curBanked = $this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $player_id");
         $curStockpile = $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id");
 
-        $realNum = min(5 - $curBanked, min($num, $curStockpile));
+        $realNum = min(($this->game->getPlayersNumber() == 2 ? 4 : 5) - $curBanked, min($num, $curStockpile));
 
         $this->game->DbQuery("UPDATE `player` SET `stockpile` = `stockpile` - $realNum WHERE `player_id` = $player_id");
         $this->game->DbQuery("UPDATE `player` SET `bank` = `bank` + $realNum WHERE `player_id` = $player_id");
@@ -362,15 +362,15 @@ class ResolveCard extends GameState
 
 		switch ($relics) {
 			case 0:
-				$cost = 8;
+				$cost = ($this->game->getPlayersNumber() == 2 ? 6 : 8);
 				$relics = clienttranslate("first");
 				break;
 			case 1:
-				$cost = 9;
+				$cost = ($this->game->getPlayersNumber() == 2 ? 7 : 9);
 				$relics = clienttranslate("second");
 				break;
 			case 2:
-				$cost = 10;
+				$cost = ($this->game->getPlayersNumber() == 2 ? 8 : 10);
 				$relics = clienttranslate("third");
 				break;
 			default:

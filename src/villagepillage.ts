@@ -6,6 +6,7 @@ import { VillagePillageGame, VillagePillageGamedatas, VillagePillagePlayer } fro
 
 export class Game implements VillagePillageGame {
     // TODO player panels
+    // FIXME 2 player turnips
     public animationManager: InstanceType<typeof BgaAnimations.Manager> = new BgaAnimations.Manager();
 
     public cardManager: CardsManager = new CardsManager(this, () => this.player_num, () => this.player_id);
@@ -67,13 +68,13 @@ export class Game implements VillagePillageGame {
                         <div id="opponent_name_${info.id}_1" class="opponent_name"><strong>This Round</strong></div>`}
                     </div>
                     <div id="player_contents_${info.id}" class="player_contents">
-                        <div id="bank_${info.id}" class="bank"></div>
+                        <div id="bank_${info.id}" class="bank ${this.player_num == 2 ? "p2" : ""}"></div>
                         <div id="stockpile_${info.id}" class="stockpile"></div>
                     </div>
                 </div>
             `)
-            for (let i = 0; i < 5; i++) {
-                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_wrap_${info.id}_${i}" class="turnip turnip_wrap_${i}"></div>`);
+            for (let i = 0; i < (this.player_num == 2 ? 4 : 5); i++) {
+                $(`bank_${info.id}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_wrap_${info.id}_${i}" class="turnip turnip_wrap_${i} ${this.player_num == 2 ? "p2" : ""}"></div>`);
             }
             for (let i = 0; i < parseInt(info.bank); i++) {
                 $(`turnip_wrap_${info.id}_${i}`).insertAdjacentHTML("beforeend", /*html*/`<div id="turnip_bank_${info.id}_${i}" class="turnip"></div>`);
@@ -318,7 +319,7 @@ export class Game implements VillagePillageGame {
     public async notif_bank(args: {player_id: number, num: number}) {
         let prevStock: number = $(`stockpile_${args.player_id}`).children.length;
         let prevBank: number = 0;
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < (this.player_num == 2 ? 4 : 5); i++) {
             if ($(`bank_${args.player_id}`).children[i].children.length > 0) prevBank++;
         }
         for (let i = 0; i < args.num; i++) {
