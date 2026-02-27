@@ -6,7 +6,6 @@ import { VillagePillageGame, VillagePillageGamedatas, VillagePillagePlayer } fro
 
 export class Game implements VillagePillageGame {
     // TODO player panels
-    // FIXME 2 player turnips
     public animationManager: InstanceType<typeof BgaAnimations.Manager> = new BgaAnimations.Manager();
 
     public cardManager: CardsManager = new CardsManager(this, () => this.player_num, () => this.player_id);
@@ -344,7 +343,7 @@ export class Game implements VillagePillageGame {
         }
 
         let remaining: number = args.bank;
-        for (let i = 4; i >= 0; i--) {
+        for (let i = (this.player_num == 2 ? 3 : 4); i >= 0; i--) {
             let turnipEl = $(`turnip_bank_${opponent_id}_${i}`);
             if (turnipEl && remaining > 0) {
                 let id = `turnip_stockpile_${player_id}_${$(`stockpile_${player_id}`).children.length}`
@@ -378,7 +377,7 @@ export class Game implements VillagePillageGame {
 
         let remainingBankSpent = args.bank_spent;
 
-        for (let i = 4; i >= 0; i--) {
+        for (let i = (this.player_num == 2 ? 3 : 4); i >= 0; i--) {
             if (remainingBankSpent > 0 && $(`turnip_wrap_${args.player_id}_${i}`).children.length > 0) {
                 await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), {duration: 200});
                 remainingBankSpent--;
@@ -402,7 +401,7 @@ export class Game implements VillagePillageGame {
         let numLeft = args.num;
         switch (args.updatePlace) {
             case "bank":
-                for (let i = 4; i >= 0; i--) {
+                for (let i = (this.player_num == 2 ? 3 : 4); i >= 0; i--) {
                     if ($(`turnip_wrap_${args.player_id}_${i}`).children.length > 0 && numLeft > 0) {
                         await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), {duration: 200});
                         numLeft--;

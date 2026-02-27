@@ -151,6 +151,9 @@ class ResolveCard extends GameState
 							$opponent_id = $this->game->getPlayerAfter($player_id);
 						}
 						$opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"] == "left" ? "right" : "left", $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . ($card_deck["location"] == "left" ? "right" : "left"), $opponent_id)))[0];
+						if ($this->game->getPlayersNumber() == 2) {
+							$opp_card_deck = array_values(array_merge($this->game->cards->getCardsInLocation($card_deck["location"], $opponent_id), $this->game->cards->getCardsInLocation("exhausted_" . $card_deck["location"], $opponent_id)))[0];
+						}
 						$opp_card = array_values(array_filter($this->allCards, fn($c) => $c->getId() == $opp_card_deck["type_arg"]))[0];
 						
 						$card_effect = $this->typeToEffect[$opp_card->getType()->value];

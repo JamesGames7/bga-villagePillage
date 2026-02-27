@@ -44,7 +44,6 @@ var Types;
 class Game {
     constructor(bga) {
         // TODO player panels
-        // FIXME 2 player turnips
         this.animationManager = new BgaAnimations.Manager();
         this.cardManager = new CardsManager(this, () => this.player_num, () => this.player_id);
         this.leftRightStocks = {};
@@ -329,7 +328,7 @@ class Game {
             await this.animationManager.slideAndAttach($(`turnip_stockpile_${player_id}_${i + playerStock}`), $(`stockpile_${player_id}`), { bump: 1, duration: 200 });
         }
         let remaining = args.bank;
-        for (let i = 4; i >= 0; i--) {
+        for (let i = (this.player_num == 2 ? 3 : 4); i >= 0; i--) {
             let turnipEl = $(`turnip_bank_${opponent_id}_${i}`);
             if (turnipEl && remaining > 0) {
                 let id = `turnip_stockpile_${player_id}_${$(`stockpile_${player_id}`).children.length}`;
@@ -358,7 +357,7 @@ class Game {
             await this.animationManager.slideOutAndDestroy($(`turnip_stockpile_${args.player_id}_${curStock - i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
         }
         let remainingBankSpent = args.bank_spent;
-        for (let i = 4; i >= 0; i--) {
+        for (let i = (this.player_num == 2 ? 3 : 4); i >= 0; i--) {
             if (remainingBankSpent > 0 && $(`turnip_wrap_${args.player_id}_${i}`).children.length > 0) {
                 await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
                 remainingBankSpent--;
@@ -379,7 +378,7 @@ class Game {
         let numLeft = args.num;
         switch (args.updatePlace) {
             case "bank":
-                for (let i = 4; i >= 0; i--) {
+                for (let i = (this.player_num == 2 ? 3 : 4); i >= 0; i--) {
                     if ($(`turnip_wrap_${args.player_id}_${i}`).children.length > 0 && numLeft > 0) {
                         await this.animationManager.slideOutAndDestroy($(`turnip_bank_${args.player_id}_${i}`), this.bga.playerPanels.getElement(args.player_id), { duration: 200 });
                         numLeft--;
