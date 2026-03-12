@@ -54,7 +54,7 @@
 
 .turnip_wrap_0 {
   position: absolute;
-  top: 67px;
+  top: 60px;
   left: 128px;
   background: none !important;
   filter: none;
@@ -66,7 +66,7 @@
 
 .turnip_wrap_1 {
   position: absolute;
-  top: 96.5px;
+  top: 89.5px;
   left: 82px;
   background: none !important;
   filter: none;
@@ -78,7 +78,7 @@
 
 .turnip_wrap_2 {
   position: absolute;
-  top: 126px;
+  top: 119px;
   left: 130px;
   background: none !important;
   filter: none;
@@ -90,7 +90,7 @@
 
 .turnip_wrap_3 {
   position: absolute;
-  top: 155.5px;
+  top: 148.5px;
   left: 82px;
   background: none !important;
   filter: none;
@@ -102,7 +102,7 @@
 
 .turnip_wrap_4 {
   position: absolute;
-  top: 185px;
+  top: 178px;
   left: 128px;
   background: none !important;
   filter: none;
@@ -150,6 +150,10 @@
   transition: all 0.8s ease;
 }
 .hand-stock.floating:hover {
+  bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height)) !important;
+}
+
+.alwaysUp .hand-stock.floating {
   bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height)) !important;
 }
 
@@ -309,4 +313,15 @@ mark.Farmer {
 
 .hiddenImgPos {
   opacity: 0 !important;
+}
+
+#shop {
+  width: 850px;
+}
+
+#shop-wrap {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  gap: 5px;
 }

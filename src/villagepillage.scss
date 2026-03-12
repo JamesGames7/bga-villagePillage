@@ -65,7 +65,7 @@ $p2_left_pos: (83px, 128px, 84px, 128px, 0px);
 @for $i from 0 through 4 {
     .turnip_wrap_#{$i} {
         position: absolute;
-        top: calc($i * 29.5px + 67px);
+        top: calc($i * 29.5px + 60px);
         left: list.nth($left_pos, $i + 1);
         background: none !important;
         filter: none;
@@ -109,8 +109,12 @@ $p2_left_pos: (83px, 128px, 84px, 128px, 0px);
     transition: all 0.8s ease;
 
     &:hover {
-        bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height)) !important;;
+        bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height)) !important;
     }
+}
+
+.alwaysUp .hand-stock.floating {
+    bottom: calc(var(--bga-cards_hand-stock-floating-height) - var(--bga-cards_hand-stock-height)) !important;
 }
 
 .stockpile {
@@ -216,4 +220,15 @@ mark {
 
 .hiddenImgPos {
     opacity: 0 !important;
+}
+
+#shop {
+    width: 850px;
+}
+
+#shop-wrap {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    gap: 5px;
 }

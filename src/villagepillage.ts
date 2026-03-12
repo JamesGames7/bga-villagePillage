@@ -163,8 +163,11 @@ export class Game implements VillagePillageGame {
                 playerStocks.right.onSlotClick = (slotId) => {};
             }
         }
+        if (this.bga.userPreferences.get(100) == 1) {
+            $('hand').classList.add("alwaysUp");
+        }
         
-        $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
+        $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div class="whiteblock" id="shop-wrap"><strong>Market</strong><div id="shop"></div></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), {sort: this.sortFunction, gap: '10px'});
         this.shopStock.addCards(gamedatas.shop);
 
@@ -264,7 +267,9 @@ export class Game implements VillagePillageGame {
                         let playerStocks: {left: InstanceType<typeof BgaCards.SlotStock<Card>>, right: InstanceType<typeof BgaCards.SlotStock<Card>>} = this.leftRightStocks[this.player_id];
                         
                         await this.handStock.addCards(playerStocks.left.getCards());
-                        await this.handStock.addCards(playerStocks.right.getCards());
+                        if (this.player_num != 2 || this.firstRound) {
+                            await this.handStock.addCards(playerStocks.right.getCards());
+                        }
 
                         ($('confirm_button') as any).disabled = true;
                     }, {color: "secondary"})

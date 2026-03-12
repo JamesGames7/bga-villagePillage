@@ -165,7 +165,10 @@ class Game {
                 playerStocks.right.onSlotClick = (slotId) => { };
             }
         };
-        $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div id="shop"></div>`);
+        if (this.bga.userPreferences.get(100) == 1) {
+            $('hand').classList.add("alwaysUp");
+        }
+        $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div class="whiteblock" id="shop-wrap"><strong>Market</strong><div id="shop"></div></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction, gap: '10px' });
         this.shopStock.addCards(gamedatas.shop);
         this.shopStock.onSelectionChange = (selection, lastChange) => {
@@ -258,7 +261,9 @@ class Game {
                     this.bga.statusBar.addActionButton("Reset", async () => {
                         let playerStocks = this.leftRightStocks[this.player_id];
                         await this.handStock.addCards(playerStocks.left.getCards());
-                        await this.handStock.addCards(playerStocks.right.getCards());
+                        if (this.player_num != 2 || this.firstRound) {
+                            await this.handStock.addCards(playerStocks.right.getCards());
+                        }
                         $('confirm_button').disabled = true;
                     }, { color: "secondary" });
                     break;

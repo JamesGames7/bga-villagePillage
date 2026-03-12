@@ -1,1 +1,14 @@
-{}
+{
+    "100": {
+        "name": "Always show cards",
+        "needReload": true,
+        "values": {
+            "1": {
+                "name": "Yes"
+            },
+            "2": {
+                "name": "No"
+            }
+        }
+    }
+}
