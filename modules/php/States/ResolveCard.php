@@ -258,7 +258,6 @@ class ResolveCard extends GameState
 			$opponent_id = $temp;
 
 			$opponent_stock = intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $opponent_id")); 
-			$this->game->dump("TESTING TESTING TESTING", $opponent_stock);
 		}
 
 		$opCardDeck = array_values($this->game->cards->getCardsInLocation($args["side"], $args["side"] == "right" ? $this->game->getPlayerBefore($opponent_id) : $this->game->getPlayerAfter($opponent_id)))[0];
@@ -300,12 +299,14 @@ class ResolveCard extends GameState
 		}
 
 		if (array_key_exists("fromBank", $args) && $args["fromBank"]) {
-			$stockSub = min($num, $opponent_stock);
+			$stockSub = min($num, $opponent_stock,
+							intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $opponent_id"))
+							+ intval($this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $opponent_id")));
 
 			$realNum = min($original, $stockSub + $opponent_bank);
 			$bankSub = $realNum - $stockSub;
 		} else {
-			$realNum = min($num, $opponent_stock);
+			$realNum = min($num, $opponent_stock, intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $opponent_id")));
 
 			$stockSub = $realNum;
 			$bankSub = 0;
