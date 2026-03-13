@@ -191,12 +191,18 @@ class Game {
                 break;
             case "ResolveCard":
                 if (this.player_num > 2 && document.querySelectorAll(".againstCard").length == 0) {
+                    console.log(args.args.playedCards);
                     args.args.playedCards.forEach(card => {
                         let el = this.leftRightStocks[parseInt(card.location_arg)][card.location].element;
-                        let opId = card.location == "left"
+                        let opId = (card.location == "left"
                             ? this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) - 1 + this.player_num) % this.player_num]
-                            : this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) + 1) % this.player_num];
+                            : this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) + 1) % this.player_num]);
                         let opPos = parseInt(args.args.playedCards
+                            .map(c => {
+                            if (c.location.includes("exhausted"))
+                                c.location = c.location.substring(10);
+                            return c;
+                        })
                             .filter(c => c.location_arg == opId.toString() && c.location != card.location)[0].type_arg);
                         el.insertAdjacentHTML("beforeend", `
                             <div class="againstCard ${card.location} imgPos_${opPos} hiddenImgPos"></div>

@@ -47,7 +47,10 @@ class ResolveCard extends GameState
         // the data sent to the front when entering the state
         return [
 			"choosingMerchant" => $this->globals->get("choosingMerchant", false),
-			"playedCards" => array_merge($this->game->cards->getCardsInLocation("left"), $this->game->cards->getCardsInLocation("right"))
+			"playedCards" => array_merge($this->game->cards->getCardsInLocation("left"), 
+										$this->game->cards->getCardsInLocation("right"),
+										$this->game->cards->getCardsInLocation("exhausted_left"),
+										$this->game->cards->getCardsInLocation("exhausted_right"))
 		];
     } 
 

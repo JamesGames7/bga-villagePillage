@@ -192,14 +192,18 @@ export class Game implements VillagePillageGame {
                 break;
             case "ResolveCard":
                 if (this.player_num > 2 && document.querySelectorAll(".againstCard").length == 0) {
+                    console.log(args.args.playedCards);
                     (args.args.playedCards as {id: string, type: Types, type_arg: string, location: string, location_arg: string}[]).forEach(card => {
                         let el: HTMLElement = this.leftRightStocks[parseInt(card.location_arg)][card.location].element;
 
-                        let opId: number = card.location == "left" 
+                        let opId: number = (card.location == "left" 
                                     ? this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) - 1 + this.player_num) % this.player_num]
-                                    : this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) + 1) % this.player_num];
-
+                                    : this.player_order[(this.player_order.indexOf(parseInt(card.location_arg)) + 1) % this.player_num]);
                         let opPos = parseInt((args.args.playedCards as {id: string, type: Types, type_arg: string, location: string, location_arg: string}[])
+                                    .map(c => {
+                                        if (c.location.includes("exhausted")) c.location = c.location.substring(10);
+                                        return c;
+                                    })
                                     .filter(c => c.location_arg == opId.toString() && c.location != card.location)
                                     [0].type_arg)
 
