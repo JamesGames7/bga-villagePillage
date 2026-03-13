@@ -25,7 +25,6 @@ class ResolveCard extends GameState
 	private bool $run_effect = true;
 	private $stealRemainder = [];
 
-	// FIXME cannot sort mid run
     function __construct(
         protected Game $game,
     ) {
@@ -101,6 +100,7 @@ class ResolveCard extends GameState
 		}
 
 		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
+			$this->game->dump("TEST TYPE", $type);
 			$sortNums = [];
 			usort($toSort, function ($a, $b) use ($sortNums) {
 				$aId = $a["player_id"];
@@ -258,7 +258,8 @@ class ResolveCard extends GameState
 			$player_id = $opponent_id;
 			$opponent_id = $temp;
 
-			$opponent_stock = $this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id");
+			$opponent_stock = intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $opponent_id")); 
+			$this->game->dump("TESTING TESTING TESTING", $opponent_stock);
 		}
 
 		$opCardDeck = array_values($this->game->cards->getCardsInLocation($args["side"], $args["side"] == "right" ? $this->game->getPlayerBefore($opponent_id) : $this->game->getPlayerAfter($opponent_id)))[0];
@@ -305,7 +306,7 @@ class ResolveCard extends GameState
 			$realNum = min($original, $stockSub + $opponent_bank);
 			$bankSub = $realNum - $stockSub;
 		} else {
-			$realNum = array_key_exists("swap", $args) ? $num : min($num, $opponent_stock);
+			$realNum = min($num, $opponent_stock);
 
 			$stockSub = $realNum;
 			$bankSub = 0;
