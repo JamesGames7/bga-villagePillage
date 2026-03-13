@@ -60,7 +60,7 @@ class Game {
         let playerOrder = gamedatas.playerorder;
         // @ts-ignore
         this.player_order = gamedatas.playerorder;
-        while (gamedatas.playerorder[0] != this.player_id) {
+        while (gamedatas.playerorder[0] != this.player_id || this.bga.players.isCurrentPlayerSpectator()) {
             playerOrder.push(playerOrder.shift());
         }
         playerOrder.forEach(id => {
@@ -278,7 +278,9 @@ class Game {
     }
     async notif_restartTurn(args) {
         await this.handStock.addCards(this.leftRightStocks[this.player_id].left.getCards());
-        await this.handStock.addCards(this.leftRightStocks[this.player_id].right.getCards());
+        if (this.player_num > 2 || this.firstRound) {
+            await this.handStock.addCards(this.leftRightStocks[this.player_id].right.getCards());
+        }
         this.handStock.setSelectionMode("single");
     }
     async notif_reveal(args) {

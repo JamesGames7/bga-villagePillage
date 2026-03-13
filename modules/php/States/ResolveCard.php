@@ -25,6 +25,7 @@ class ResolveCard extends GameState
 	private bool $run_effect = true;
 	private $stealRemainder = [];
 
+	// FIXME cannot sort mid run
     function __construct(
         protected Game $game,
     ) {
@@ -68,6 +69,7 @@ class ResolveCard extends GameState
 
 			$this->globals->set("choosingMerchant", false);
 			$this->globals->set("firstMerchantSide", "none");
+			$this->globals->set("previouslyActivated", []);
 		} else {
 			$this->allCards = array_merge($this->game->CARDS, $this->game->START_CARDS);
 			$this->cards = $this->globals->get("cards");
@@ -141,10 +143,11 @@ class ResolveCard extends GameState
 				$card = $toSort[$i];
                 $card_deck = array_values(array_filter($this->cards, fn($c) => $c["type_arg"] == $card["id"] && $c["location_arg"] == $card["player_id"]))[0];
                 if ($card["type"] == $type) {
-					if ($this->run_effect) {
+					if ($this->run_effect && !in_array(intval($card_deck["id"]), $this->globals->get("previouslyActivated"))) {
 						$this->globals->set("stoppedCard", intval($card_deck["id"]));
 						$this->globals->set("card_name", $card["name"]);
 						$this->globals->set("card_type", $type->value);
+						$this->globals->set("previouslyActivated", array_merge($this->globals->get("previouslyActivated"), [intval($card_deck["id"])]));
 						$player_id = $card_deck["location_arg"];
 						$opponent_id = $card_deck["location"] == "left" || $card_deck["location"] == "exhausted_left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
 						if ($this->game->getPlayersNumber() == 2) {
@@ -407,10 +410,14 @@ class ResolveCard extends GameState
     private function buyCard(array $args): void {
 		if ($this->game->cards->countCardsInLocation("shop") > 0) {
 			$player_id = $args["player_id"];
-			$this->run_effect = false;
-			$this->globals->set("cost", $args["num"]);
-			$this->gamestate->setPlayersMultiactive([$player_id], "stay");
-			$this->notify->player($player_id, 'buyCardStart', '', []);
+			if (intval($this->game->getUniqueValueFromDB("SELECT `bank` FROM `player` WHERE `player_id` = $player_id"))
+				+ intval($this->game->getUniqueValueFromDB("SELECT `stockpile` FROM `player` WHERE `player_id` = $player_id"))
+				> 0) {
+				$this->run_effect = false;
+				$this->globals->set("cost", $args["num"]);
+				$this->gamestate->setPlayersMultiactive([$player_id], "stay");
+				$this->notify->player($player_id, 'buyCardStart', '', []);
+			}
 		}
     }
 
