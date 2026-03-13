@@ -100,7 +100,6 @@ class ResolveCard extends GameState
 		}
 
 		foreach ([Types::Farmer, Types::Wall, Types::Raider, Types::Merchant] as $type) {
-			$this->game->dump("TEST TYPE", $type);
 			$sortNums = [];
 			usort($toSort, function ($a, $b) use ($sortNums) {
 				$aId = $a["player_id"];
@@ -146,11 +145,11 @@ class ResolveCard extends GameState
 				$card = $toSort[$i];
                 $card_deck = array_values(array_filter($this->cards, fn($c) => $c["type_arg"] == $card["id"] && $c["location_arg"] == $card["player_id"]))[0];
                 if ($card["type"] == $type) {
-					if ($this->run_effect && !in_array(intval($card_deck["id"]), $this->globals->get("previouslyActivated"))) {
+					if ($this->run_effect && !in_array(intval($card_deck["id"]), $this->globals->get("previouslyActivated", []))) {
 						$this->globals->set("stoppedCard", intval($card_deck["id"]));
 						$this->globals->set("card_name", $card["name"]);
 						$this->globals->set("card_type", $type->value);
-						$this->globals->set("previouslyActivated", array_merge($this->globals->get("previouslyActivated"), [intval($card_deck["id"])]));
+						$this->globals->set("previouslyActivated", array_merge($this->globals->get("previouslyActivated", []), [intval($card_deck["id"])]));
 						$player_id = $card_deck["location_arg"];
 						$opponent_id = $card_deck["location"] == "left" || $card_deck["location"] == "exhausted_left" ? $this->game->getPlayerBefore($player_id) : $this->game->getPlayerAfter($player_id);
 						if ($this->game->getPlayersNumber() == 2) {
