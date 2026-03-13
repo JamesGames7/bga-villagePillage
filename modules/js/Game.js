@@ -60,7 +60,7 @@ class Game {
         let playerOrder = gamedatas.playerorder;
         // @ts-ignore
         this.player_order = gamedatas.playerorder;
-        while (gamedatas.playerorder[0] != this.player_id || this.bga.players.isCurrentPlayerSpectator()) {
+        while (gamedatas.playerorder[0] != this.player_id && !this.bga.players.isCurrentPlayerSpectator()) {
             playerOrder.push(playerOrder.shift());
         }
         playerOrder.forEach(id => {
@@ -122,51 +122,53 @@ class Game {
             }
             this.exhaustedStocks[info.id] = new BgaCards.AllVisibleDeck(this.cardManager, $(`exhausted_${info.id}`), { horizontalShift: '0' });
             this.exhaustedStocks[info.id].addCards(info.exhausted);
-            this.voidStock = new BgaCards.VoidStock(this.cardManager, this.bga.playerPanels.getElement(this.player_id));
+            this.voidStock = new BgaCards.VoidStock(this.cardManager, $('ingame_menu_wheel'));
         });
         $(`game_play_area`).insertAdjacentHTML("beforeend", `<div id="hand"></div>`);
-        this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), { sort: this.sortFunction });
-        this.handStock.addCards(gamedatas.hand);
-        this.handStock.onSelectionChange = (selection, lastChange) => {
-            let playerStocks = this.leftRightStocks[this.player_id];
-            if (this.handStock.getSelection().length > 0) {
-                playerStocks.left.setSlotSelectionMode("single");
-                playerStocks.left.onSlotClick = async (slotId) => {
-                    await this.handStock.addCards(playerStocks.left.getCards());
-                    await playerStocks.left.addCard(this.handStock.getSelection()[0]);
-                    if (playerStocks.right.getCardCount() == 1) {
-                        $('confirm_button').disabled = false;
-                    }
-                    else {
-                        $('confirm_button').disabled = true;
-                    }
-                    if (this.player_num == 2 && !this.firstRound) {
-                        $('confirm_button').disabled = false;
-                    }
-                };
-                if (this.player_num > 2 || this.firstRound) {
-                    playerStocks.right.setSlotSelectionMode("single");
-                    playerStocks.right.onSlotClick = async (slotId) => {
-                        await this.handStock.addCards(playerStocks.right.getCards());
-                        await playerStocks.right.addCard(this.handStock.getSelection()[0]);
-                        if (playerStocks.left.getCardCount() == 1) {
+        if (!this.bga.players.isCurrentPlayerSpectator()) {
+            this.handStock = new BgaCards.HandStock(this.cardManager, $('hand'), { sort: this.sortFunction });
+            this.handStock.addCards(gamedatas.hand);
+            this.handStock.onSelectionChange = (selection, lastChange) => {
+                let playerStocks = this.leftRightStocks[this.player_id];
+                if (this.handStock.getSelection().length > 0) {
+                    playerStocks.left.setSlotSelectionMode("single");
+                    playerStocks.left.onSlotClick = async (slotId) => {
+                        await this.handStock.addCards(playerStocks.left.getCards());
+                        await playerStocks.left.addCard(this.handStock.getSelection()[0]);
+                        if (playerStocks.right.getCardCount() == 1) {
                             $('confirm_button').disabled = false;
                         }
                         else {
                             $('confirm_button').disabled = true;
                         }
+                        if (this.player_num == 2 && !this.firstRound) {
+                            $('confirm_button').disabled = false;
+                        }
                     };
+                    if (this.player_num > 2 || this.firstRound) {
+                        playerStocks.right.setSlotSelectionMode("single");
+                        playerStocks.right.onSlotClick = async (slotId) => {
+                            await this.handStock.addCards(playerStocks.right.getCards());
+                            await playerStocks.right.addCard(this.handStock.getSelection()[0]);
+                            if (playerStocks.left.getCardCount() == 1) {
+                                $('confirm_button').disabled = false;
+                            }
+                            else {
+                                $('confirm_button').disabled = true;
+                            }
+                        };
+                    }
                 }
+                else {
+                    playerStocks.left.setSlotSelectionMode("none");
+                    playerStocks.right.setSlotSelectionMode("none");
+                    playerStocks.left.onSlotClick = (slotId) => { };
+                    playerStocks.right.onSlotClick = (slotId) => { };
+                }
+            };
+            if (this.bga.userPreferences.get(100) == 1) {
+                $('hand').classList.add("alwaysUp");
             }
-            else {
-                playerStocks.left.setSlotSelectionMode("none");
-                playerStocks.right.setSlotSelectionMode("none");
-                playerStocks.left.onSlotClick = (slotId) => { };
-                playerStocks.right.onSlotClick = (slotId) => { };
-            }
-        };
-        if (this.bga.userPreferences.get(100) == 1) {
-            $('hand').classList.add("alwaysUp");
         }
         $(`game_play_area`).insertAdjacentHTML("afterbegin", `<div class="whiteblock" id="shop-wrap"><strong>Market</strong><div id="shop"></div></div>`);
         this.shopStock = new BgaCards.LineStock(this.cardManager, $('shop'), { sort: this.sortFunction, gap: '10px' });
