@@ -43,7 +43,6 @@ var Types;
 
 class Game {
     constructor(bga) {
-        // TODO player panels
         this.animationManager = new BgaAnimations.Manager();
         this.cardManager = new CardsManager(this, () => this.player_num, () => this.player_id);
         this.leftRightStocks = {};

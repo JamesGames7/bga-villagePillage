@@ -5,7 +5,6 @@ import { Types } from "./cards";
 import { VillagePillageGame, VillagePillageGamedatas, VillagePillagePlayer } from "./docs/villagepillage";
 
 export class Game implements VillagePillageGame {
-    // TODO player panels
     public animationManager: InstanceType<typeof BgaAnimations.Manager> = new BgaAnimations.Manager();
 
     public cardManager: CardsManager = new CardsManager(this, () => this.player_num, () => this.player_id);

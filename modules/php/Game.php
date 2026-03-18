@@ -100,8 +100,6 @@ class Game extends \Bga\GameFramework\Table
      */
     public function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
         $relics = max(array_map(fn($data) => intval($data["relics"]), $this->getCollectionFromDB("SELECT `player_id`, `relics` FROM `player`")));
 
         return $relics * 100 / 3;

@@ -164,7 +164,7 @@ class ResolveCard extends GameState
 						$card_effect = $this->typeToEffect[$opp_card->getType()->value];
 
 						$cardForEffect = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($c) => $c->getId() == $card["id"]))[0];
-						$effect = $cardForEffect->$card_effect(intval($player_id), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), $card_deck["location"] == "left" ? "right" : "left");
+						$effect = $cardForEffect->$card_effect(intval($player_id), $opponent_id, intval($opp_nums[$opponent_id]["stockpile"]), intval($opp_nums[$opponent_id]["bank"]), intval($opp_card_deck["id"]), $opp_card->getName(), ($this->game->getPlayersNumber() > 2 ? ($card_deck["location"] == "left" ? "right" : "left") : "right"));
 						
 						foreach ($effect as $function => $args) {
 							$this->$function($args);
@@ -340,6 +340,10 @@ class ResolveCard extends GameState
 		$type_op = array_values(array_filter(array_merge($this->game->CARDS, $this->game->START_CARDS), fn($card) => $card->getName() == $exhausted_card_name, ))[0]->getType()->value;
 		
 		if (array_key_exists("swap", $args) && $args["swap"]) {
+			if ($this->game->getPlayersNumber() == 2) {
+				$side = ($side == "left" ? "right" : "left");
+			}
+
 			$this->game->cards->moveAllCardsInLocation($side == "left" ? "right" : "left", "exhausted_" . ($side == "left" ? "right" : "left"), $player_id, $player_id);
 
 			$this->notify->all("exhaust", clienttranslate('${player_name1} exhausts <mark class="${type}">${card_name}</mark> using <mark class="${type}">${card_name}</mark>'), [
